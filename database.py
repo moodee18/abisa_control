@@ -3567,7 +3567,10 @@ class DatabaseManager:
             if "folio_documento" in data and data.get("folio_documento") is not None:
                 item.folio_documento = str(data["folio_documento"]).strip()
             if "observaciones" in data and data.get("observaciones") is not None:
-                item.observaciones = str(data["observaciones"]).strip()
+                new_obs = str(data["observaciones"]).strip()
+                if "importad" in (item.observaciones or "").lower() and "importad" not in new_obs.lower():
+                    new_obs = f"Apoyo importado base. {new_obs}".strip()
+                item.observaciones = new_obs
 
             session.commit()
             return item.to_dict()

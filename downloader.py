@@ -125,6 +125,171 @@ class SiiaDownloader:
             _CURRENT_CONTEXT = None
             _CURRENT_BROWSER = None
 
+    def get_authenticated_session_cookies(self) -> dict:
+        """Inicia sesión silenciosa (headless) y extrae las cookies de sesión válidas."""
+        global _CURRENT_BROWSER, _CURRENT_CONTEXT
+        print("[RPA HEADLESS] Iniciando sesión sin ventana para obtener cookies de autenticación...")
+        with sync_playwright() as p:
+            browser = p.chromium.launch(
+                headless=True,
+                args=["--disable-blink-features=AutomationControlled"]
+            )
+            context = browser.new_context(accept_downloads=True, ignore_https_errors=True)
+            _CURRENT_BROWSER = browser
+            _CURRENT_CONTEXT = context
+            page = context.new_page()
+
+            logged_in = self.login(page)
+            if not logged_in:
+                browser.close()
+                _CURRENT_BROWSER = None
+                _CURRENT_CONTEXT = None
+                raise RuntimeError("No se pudo iniciar sesión automáticamente en SIIA. Verifique SIIA_USERNAME y SIIA_PASSWORD en .env.")
+
+            cookies = {c['name']: c['value'] for c in context.cookies()}
+            browser.close()
+            _CURRENT_BROWSER = None
+            _CURRENT_CONTEXT = None
+            return cookies
+
+    def download_existencias_auto(self, localidad_id: str = "1836", progress_callback=None) -> Path:
+        """
+        Descarga automática y desatendida del reporte oficial de existencias (CS ALMACEN 2022 o id indicado).
+        Funciona 100% en segundo plano sin abrir ninguna ventana en el escritorio, ideal para llamadas desde red WiFi.
+        """
+        import ssl
+        import urllib.request
+
+        if progress_callback:
+            progress_callback("Iniciando sesión silenciosa en SIIA...")
+
+        cookies = self.get_authenticated_session_cookies()
+
+        if progress_callback:
+            progress_callback("Descargando reporte oficial de existencias desde SIIA...")
+
+        url = f"https://siia.abisalud.com/reportes/almacen/existencias_ubicacion/excel_existencias.php?localidad={localidad_id}&localidad_t={localidad_id}&almacen=-999&codigo_barras=-999"
+        cookie_header = "; ".join([f"{k}={v}" for k, v in cookies.items()])
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Cookie": cookie_header,
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+        )
+
+        dest_path = self.download_dir / "Existiencias_x_Ubicación.xlsx"
+        print(f"[RPA HEADLESS] Descargando existencias desde {url}...")
+        with urllib.request.urlopen(req, context=ctx, timeout=180) as resp:
+            content = resp.read()
+            if len(content) < 1000:
+                raise RuntimeError("El archivo descargado está vacío o la sesión expiró.")
+            with open(dest_path, "wb") as f:
+                f.write(content)
+
+        print(f"[RPA HEADLESS] Reporte de existencias descargado exitosamente: {dest_path} ({len(content):,} bytes)")
+        if progress_callback:
+            progress_callback(f"Reporte descargado ({len(content):,} bytes). Importando...")
+
+        return dest_path
+
+    def download_movimientos_auto(self, fecha_inicio: str, fecha_fin: str, localidad_id: str = "1836", progress_callback=None) -> list:
+        """
+        Descarga automática y desatendida del reporte de Entradas y Salidas en un rango de fechas (YYYY-MM-DD).
+        Si el rango abarca más de un mes o períodos largos, lo divide automáticamente en bloques mensuales
+        para evitar que el servidor de SIIA sature la base de datos o corte la conexión por tiempo límite (timeout).
+        """
+        import ssl
+        import urllib.request
+        import calendar
+        from datetime import datetime, date
+
+        def get_monthly_date_chunks(start_str: str, end_str: str):
+            start_dt = datetime.strptime(start_str, "%Y-%m-%d").date()
+            end_dt = datetime.strptime(end_str, "%Y-%m-%d").date()
+            if start_dt > end_dt:
+                start_dt, end_dt = end_dt, start_dt
+            chunks = []
+            curr = start_dt
+            while curr <= end_dt:
+                last_day = calendar.monthrange(curr.year, curr.month)[1]
+                m_end = date(curr.year, curr.month, last_day)
+                chunk_end = min(m_end, end_dt)
+                chunks.append((curr.strftime("%Y-%m-%d"), chunk_end.strftime("%Y-%m-%d")))
+                if m_end >= end_dt:
+                    break
+                if curr.month == 12:
+                    curr = date(curr.year + 1, 1, 1)
+                else:
+                    curr = date(curr.year, curr.month + 1, 1)
+            return chunks
+
+        chunks = get_monthly_date_chunks(fecha_inicio, fecha_fin)
+        total_chunks = len(chunks)
+
+        if progress_callback:
+            if total_chunks > 1:
+                progress_callback(f"Rango de {total_chunks} meses detectado ({fecha_inicio} al {fecha_fin}). Conectando a SIIA...")
+            else:
+                progress_callback(f"Iniciando sesión silenciosa en SIIA ({fecha_inicio} al {fecha_fin})...")
+
+        cookies = self.get_authenticated_session_cookies()
+        cookie_header = "; ".join([f"{k}={v}" for k, v in cookies.items()])
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
+        downloaded_paths = []
+        for idx, (c_start, c_end) in enumerate(chunks, 1):
+            if progress_callback:
+                if total_chunks > 1:
+                    progress_callback(f"Descargando bloque {idx} de {total_chunks}: {c_start} al {c_end} (SIIA procesando consulta)...")
+                else:
+                    progress_callback(f"Descargando Entradas y Salidas ({c_start} al {c_end})...")
+
+            url = f"https://siia.abisalud.com/reportes/almacen/entradas_salidas/excel.php?localidad={localidad_id}&localidad_t={localidad_id}&almacen=-999&codigo_barras=-999&fecha_inicio={c_start}&fecha_fin={c_end}&tipo_reporte=1&lotes=-999"
+            req = urllib.request.Request(
+                url,
+                headers={
+                    "Cookie": cookie_header,
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                }
+            )
+
+            dest_path = self.download_dir / f"Entradas_Salidas_{c_start}_al_{c_end}.xlsx"
+            print(f"[RPA HEADLESS] Descargando bloque {idx}/{total_chunks} ({c_start} al {c_end})...")
+
+            try:
+                with urllib.request.urlopen(req, context=ctx, timeout=240) as resp:
+                    content = resp.read()
+                    if len(content) < 1000:
+                        print(f"[RPA ADVERTENCIA] El bloque {c_start} al {c_end} devolvió menos de 1000 bytes (posiblemente sin movimientos).")
+                        continue
+                    with open(dest_path, "wb") as f:
+                        f.write(content)
+                    downloaded_paths.append(dest_path)
+                    print(f"[RPA HEADLESS] Bloque {idx}/{total_chunks} guardado: {dest_path} ({len(content):,} bytes)")
+            except Exception as e:
+                print(f"[RPA ERROR] Error en bloque {c_start} al {c_end}: {e}")
+                if total_chunks == 1:
+                    raise e
+                if progress_callback:
+                    progress_callback(f"Advertencia: Bloque {c_start} al {c_end} no respondió ({e}). Continuando con siguientes meses...")
+
+        if not downloaded_paths:
+            raise RuntimeError(f"No se pudieron descargar datos para el rango especificado ({fecha_inicio} al {fecha_fin}).")
+
+        if progress_callback:
+            progress_callback(f"{len(downloaded_paths)} bloque(s) descargados exitosamente. Importando a la base de datos...")
+
+        return downloaded_paths
+
     def run_interactive_session(self, target: Optional[str] = None):
         """
         Inicia el navegador para que el usuario navegue, inicie sesión y seleccione

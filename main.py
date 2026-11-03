@@ -11,7 +11,6 @@ from tabulate import tabulate
 import config
 from database import DatabaseManager
 from processor import DataProcessor
-from downloader import SiiaDownloader
 
 def process_all_downloads(move_after_process: bool = True):
     """Lee todos los archivos en la carpeta de descargas, los procesa y los guarda en la base de datos."""
@@ -19,7 +18,11 @@ def process_all_downloads(move_after_process: bool = True):
     download_dir = config.DOWNLOAD_DIR
     processed_dir = config.PROCESSED_DIR
 
-    files = [f for f in download_dir.iterdir() if f.is_file() and f.suffix.lower() in [".csv", ".xlsx", ".xls", ".json", ".pdf"]]
+    files = [
+        f for f in download_dir.iterdir() 
+        if f.is_file() and f.suffix.lower() in [".csv", ".xlsx", ".xls", ".json", ".pdf"]
+        and not f.name.startswith("test_") and not f.name.startswith("test-")
+    ]
 
     if not files:
         print(f"[INFO] No se encontraron archivos nuevos para procesar en: {download_dir}")
@@ -315,8 +318,13 @@ def main():
         add_record_interactive()
 
     if args.download or args.all:
-        downloader = SiiaDownloader()
-        downloader.run_interactive_session()
+        try:
+            from downloader import SiiaDownloader
+            downloader = SiiaDownloader()
+            downloader.run_interactive_session()
+        except ImportError as e:
+            print(f"\n[ERROR] No se pudo cargar el módulo de automatización SIIA: {e}")
+            print("Si Windows bloqueó el archivo (_greenlet / playwright), desactive el 'Control inteligente de aplicaciones' en Seguridad de Windows o desbloquee los archivos.\n")
 
     if args.process or args.all:
         process_all_downloads()

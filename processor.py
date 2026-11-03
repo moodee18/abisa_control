@@ -113,13 +113,16 @@ class DataProcessor:
 
             # Caso especial SIIA Abisalud: 'Existencias_x_Localidad' contiene el detalle completo de lotes.
             # No concatenar con 'Por Clave Cliente' para no duplicar existencias.
-            if 'Existencias_x_Localidad' in sheet_names:
-                df_main = cls._read_sheet_with_dynamic_header(excel_file, 'Existencias_x_Localidad')
+            existencias_sheet = next((s for s in sheet_names if s.strip().lower() == 'existencias_x_localidad'), None)
+            if existencias_sheet:
+                df_main = cls._read_sheet_with_dynamic_header(excel_file, existencias_sheet)
+                df_main['hoja_origen'] = 'Existencias_x_Localidad'
                 
                 # Rescatar 'Unidad de Medida' de la hoja resumen 'Por Clave Cliente' si existe
-                if 'Por Clave Cliente' in sheet_names:
+                resumen_sheet = next((s for s in sheet_names if 'clave cliente' in s.strip().lower()), None)
+                if resumen_sheet:
                     try:
-                        df_summary = cls._read_sheet_with_dynamic_header(excel_file, 'Por Clave Cliente')
+                        df_summary = cls._read_sheet_with_dynamic_header(excel_file, resumen_sheet)
                         if 'clave_cliente' in df_summary.columns and 'unidad_de_medida' in df_summary.columns:
                             um_map = df_summary.set_index('clave_cliente')['unidad_de_medida'].dropna().to_dict()
                             if 'clave_cliente' in df_main.columns:

@@ -6,13 +6,19 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import datetime
 import pandas as pd
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query
-from fastapi.responses import HTMLResponse, FileResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request, Response, Depends
+from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 import config
-from database import DatabaseManager, MovimientoRecord, InsumoRecord
+from database import (
+    DatabaseManager,
+    MovimientoRecord,
+    InsumoRecord,
+    ALL_PERMISSIONS_CATALOG,
+    ROLE_PRESETS,
+)
 from processor import DataProcessor
 
 import openpyxl
@@ -56,20 +62,408 @@ class InsumoUpdateRequest(BaseModel):
     folio_documento: Optional[str] = None
     fecha_documento: Optional[str] = None
 
-# Servir la interfaz HTML principal
+# Modelos para Control de Inventario por Movimientos
+class CatalogoMovRequest(BaseModel):
+    clave: str
+    descripcion: str
+    unidad_medida: Optional[str] = "PZA"
+    proveedor_predeterminado: Optional[str] = ""
+    procedimiento: Optional[str] = ""
+    contrato: Optional[str] = ""
+    registro_sanitario: Optional[str] = ""
+
+class ProveedorMovRequest(BaseModel):
+    nombre: str
+    rfc: Optional[str] = ""
+    contacto: Optional[str] = ""
+
+class UnidadMedidaMovRequest(BaseModel):
+    clave_unidad: Optional[str] = ""
+    codigo: Optional[str] = ""
+    descripcion: Optional[str] = ""
+
+class PedidoItemUpdateRequest(BaseModel):
+    id: Optional[int] = None
+    clave: str
+    descripcion: Optional[str] = ""
+    cantidad: float = 0.0
+    lote_asignado: Optional[str] = ""
+    lote: Optional[str] = ""
+    fecha_caducidad: Optional[str] = ""
+
+class PedidoCompletoUpdateRequest(BaseModel):
+    folio_actual: str
+    archivo_actual: Optional[str] = ""
+    mes_actual: Optional[str] = "OCTUBRE"
+    ano_actual: Optional[int] = 2026
+    nuevo_folio: Optional[str] = None
+    nueva_fecha: Optional[str] = None
+    nuevo_dia: Optional[int] = None
+    nuevo_mes: Optional[str] = None
+    nuevo_ano: Optional[int] = None
+    nuevo_archivo: Optional[str] = None
+    items: Optional[List[PedidoItemUpdateRequest]] = None
+
+class IniciarMesRequest(BaseModel):
+    mes_origen: Optional[str] = "OCTUBRE"
+    ano_origen: Optional[int] = 2026
+    mes_destino: Optional[str] = "NOVIEMBRE"
+    ano_destino: Optional[int] = 2026
+
+class EntradaMovRequest(BaseModel):
+    row_index: Optional[int] = None
+    orden_suministro: Optional[str] = ""
+    folio_documento: Optional[str] = ""
+    folio_administrativo: Optional[str] = ""
+    procedimiento: Optional[str] = ""
+    no_procedimiento: Optional[str] = ""
+    contrato: Optional[str] = ""
+    no_contrato: Optional[str] = ""
+    registro_sanitario: Optional[str] = ""
+    almacen: Optional[str] = "CS ALMACEN 2022"
+    proveedor: Optional[str] = ""
+    clave: str
+    lote: str
+    descripcion: Optional[str] = ""
+    unidad_medida: Optional[str] = "PZA"
+    fecha_ajuste: Optional[str] = ""
+    fecha_entrada: Optional[str] = ""
+    fecha_fabricacion: Optional[str] = ""
+    fecha_caducidad: Optional[str] = ""
+    inventario_inicial: float = 0.0
+    entrada_ajuste: float = 0.0
+    entrada_por_ajuste: Optional[float] = None
+    cantidad_recibida: float = 0.0
+    dias: Optional[Dict[str, float]] = None
+    apoyo_institucional: Optional[float] = 0.0
+    fecha_apoyo: Optional[str] = ""
+    mes: Optional[str] = "OCTUBRE"
+    ano: Optional[int] = 2026
+    observaciones: Optional[str] = ""
+
+class SalidaPdfUpdateRequest(BaseModel):
+    archivo_pdf: Optional[str] = None
+    folio_pedido: Optional[str] = None
+    fecha: Optional[str] = None
+    dia: Optional[int] = None
+    mes: Optional[str] = None
+    ano: Optional[int] = None
+    clave: Optional[str] = None
+    descripcion: Optional[str] = None
+    cantidad: Optional[float] = None
+    lote_asignado: Optional[str] = None
+    fecha_caducidad: Optional[str] = None
+    cliente_destino: Optional[str] = None
+    estado_validacion: Optional[str] = None
+    aviso_fefo: Optional[str] = None
+    observaciones: Optional[str] = None
+    recalcular_fefo: Optional[bool] = True
+
+class ApoyoInstitucionalRequest(BaseModel):
+    clave: str
+    lote: str
+    descripcion: Optional[str] = ""
+    cantidad: float
+    institucion: str
+    fecha: Optional[str] = ""
+    dia: Optional[int] = None
+    folio_documento: Optional[str] = ""
+    folio_observaciones: Optional[str] = ""
+    mes: Optional[str] = "OCTUBRE"
+    ano: Optional[int] = 2026
+    observaciones: Optional[str] = ""
+
+
+# ==========================================
+# MODELOS Y DEPENDENCIAS DE AUTENTICACIÓN
+# ==========================================
+SESSION_COOKIE_NAME = "abisalud_session"
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class UserCreateRequest(BaseModel):
+    username: str
+    nombre_completo: Optional[str] = ""
+    password: str
+    rol: Optional[str] = "personalizado"
+    is_superadmin: bool = False
+    activo: bool = True
+    permisos: Optional[Dict[str, bool]] = None
+
+
+class UserUpdateRequest(BaseModel):
+    username: Optional[str] = None
+    nombre_completo: Optional[str] = None
+    password: Optional[str] = None
+    rol: Optional[str] = None
+    is_superadmin: Optional[bool] = None
+    activo: Optional[bool] = None
+    permisos: Optional[Dict[str, bool]] = None
+
+
+def extract_session_token(request: Request) -> Optional[str]:
+    token = request.cookies.get(SESSION_COOKIE_NAME)
+    if token:
+        return token
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.lower().startswith("bearer "):
+        return auth_header[7:].strip()
+    return None
+
+
+def get_current_user(request: Request) -> Dict[str, Any]:
+    token = extract_session_token(request)
+    user = db.get_user_by_session_token(token)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Sesión expirada o no autenticada. Por favor inicie sesión.",
+        )
+    return user
+
+
+def require_any_permission(*perms: str):
+    def _checker(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:
+        if user.get("is_superadmin"):
+            return user
+        user_perms = user.get("permisos") or {}
+        if any(bool(user_perms.get(p, False)) for p in perms):
+            return user
+        raise HTTPException(
+            status_code=403,
+            detail="Acceso denegado: tu cuenta no tiene permisos para realizar esta acción.",
+        )
+    return _checker
+
+
+# ==========================================
+# VISTAS HTML (LOGIN Y PANEL PRINCIPAL)
+# ==========================================
+
+@app.get("/login", response_class=HTMLResponse)
+async def get_login_page(request: Request):
+    token = extract_session_token(request)
+    if token and db.get_user_by_session_token(token):
+        return RedirectResponse(url="/", status_code=302)
+    login_path = config.BASE_DIR / "templates" / "login.html"
+    if not login_path.exists():
+        raise HTTPException(status_code=404, detail="Plantilla login.html no encontrada")
+    return HTMLResponse(content=login_path.read_text(encoding="utf-8"))
+
+
 @app.get("/", response_class=HTMLResponse)
-async def get_index():
+async def get_index(request: Request):
+    token = extract_session_token(request)
+    if not token or not db.get_user_by_session_token(token):
+        return RedirectResponse(url="/login", status_code=302)
     template_path = config.BASE_DIR / "templates" / "index.html"
     if not template_path.exists():
         raise HTTPException(status_code=404, detail="Plantilla index.html no encontrada")
     return HTMLResponse(content=template_path.read_text(encoding="utf-8"))
+
+
+# ==========================================
+# ENDPOINTS DE AUTENTICACIÓN Y USUARIOS
+# ==========================================
+
+@app.post("/api/auth/login")
+async def api_login(payload: LoginRequest, request: Request, response: Response):
+    try:
+        client_ip = request.client.host if request.client else ""
+        user_agent = request.headers.get("user-agent", "")
+        auth_res = db.authenticate_user(
+            username=payload.username,
+            password=payload.password,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        )
+        if not auth_res:
+            raise HTTPException(status_code=401, detail="Usuario o contraseña incorrectos.")
+
+        response.set_cookie(
+            key=SESSION_COOKIE_NAME,
+            value=auth_res["token"],
+            httponly=True,
+            samesite="lax",
+            max_age=7 * 24 * 3600,
+            path="/",
+        )
+        return {
+            "status": "success",
+            "message": f"Bienvenido, {auth_res['user']['nombre_completo']}",
+            "token": auth_res["token"],
+            "user": auth_res["user"],
+        }
+    except ValueError as ve:
+        raise HTTPException(status_code=403, detail=str(ve))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al iniciar sesión: {e}")
+
+
+@app.post("/api/auth/logout")
+async def api_logout(request: Request, response: Response):
+    token = extract_session_token(request)
+    if token:
+        db.logout_session(token)
+    response.delete_cookie(key=SESSION_COOKIE_NAME, path="/")
+    return {"status": "success", "message": "Sesión cerrada correctamente."}
+
+
+@app.get("/api/auth/me")
+async def api_me(current_user: Dict[str, Any] = Depends(get_current_user)):
+    return {
+        "user": current_user,
+        "permissions_catalog": ALL_PERMISSIONS_CATALOG,
+        "role_presets": ROLE_PRESETS,
+    }
+
+
+@app.post("/api/auth/change-password")
+async def api_change_own_password(
+    payload: ChangePasswordRequest,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    try:
+        db.change_own_password(
+            user_id=current_user["id"],
+            current_password=payload.current_password,
+            new_password=payload.new_password,
+        )
+        return {"status": "success", "message": "Contraseña actualizada exitosamente."}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/users")
+async def api_list_users(
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_usuarios")),
+):
+    try:
+        return {
+            "users": db.list_users(search=search),
+            "permissions_catalog": ALL_PERMISSIONS_CATALOG,
+            "role_presets": ROLE_PRESETS,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/users")
+async def api_create_user(
+    payload: UserCreateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_usuarios")),
+):
+    try:
+        if payload.is_superadmin and not current_user.get("is_superadmin"):
+            raise HTTPException(
+                status_code=403,
+                detail="Solo un Superadministrador puede asignar el rol de Superadministrador.",
+            )
+        created = db.create_user(payload.model_dump(), actor_username=current_user["username"])
+        return {
+            "status": "success",
+            "message": f"Usuario '{created['username']}' creado exitosamente.",
+            "user": created,
+        }
+    except HTTPException:
+        raise
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/api/users/{user_id}")
+async def api_update_user(
+    user_id: int,
+    payload: UserUpdateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_usuarios")),
+):
+    try:
+        target = db.get_user_by_id(user_id)
+        if not target:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+        if (target.get("is_superadmin") or payload.is_superadmin) and not current_user.get("is_superadmin"):
+            raise HTTPException(
+                status_code=403,
+                detail="Solo un Superadministrador puede modificar cuentas de Superadministrador.",
+            )
+        data = {k: v for k, v in payload.model_dump().items() if v is not None}
+        updated = db.update_user(
+            user_id=user_id,
+            data=data,
+            current_user_id=current_user["id"],
+            actor_username=current_user["username"],
+        )
+        return {
+            "status": "success",
+            "message": f"Usuario '{updated['username']}' actualizado correctamente.",
+            "user": updated,
+        }
+    except HTTPException:
+        raise
+    except LookupError as le:
+        raise HTTPException(status_code=404, detail=str(le))
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/users/{user_id}")
+async def api_delete_user(
+    user_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_usuarios")),
+):
+    try:
+        target = db.get_user_by_id(user_id)
+        if not target:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+        if target.get("is_superadmin") and not current_user.get("is_superadmin"):
+            raise HTTPException(
+                status_code=403,
+                detail="Solo un Superadministrador puede eliminar a otro Superadministrador.",
+            )
+        ok = db.delete_user(
+            user_id=user_id,
+            current_user_id=current_user["id"],
+            actor_username=current_user["username"],
+        )
+        if not ok:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado.")
+        return {"status": "success", "message": "Usuario eliminado exitosamente."}
+    except HTTPException:
+        raise
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 # ==========================================
 # ENDPOINTS REST API
 # ==========================================
 
 @app.get("/api/kpis")
-async def get_kpis():
+async def get_kpis(
+    current_user: Dict[str, Any] = Depends(
+        require_any_permission("ver_catalogo", "ver_inventario", "ver_control_movimientos", "marbetes")
+    )
+):
     """Retorna métricas generales del inventario."""
     try:
         return db.get_inventory_kpis()
@@ -77,7 +471,10 @@ async def get_kpis():
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/catalog")
-async def get_catalog(search: Optional[str] = Query(None)):
+async def get_catalog(
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_catalogo", "marbetes")),
+):
     """Retorna catálogo agrupado y consolidado por Clave única."""
     try:
         return db.get_catalog_by_clave(search=search)
@@ -91,7 +488,8 @@ async def get_inventory(
     lote: Optional[str] = Query(None),
     almacen: Optional[str] = Query(None),
     limit: int = Query(200, ge=1, le=1000),
-    offset: int = Query(0, ge=0)
+    offset: int = Query(0, ge=0),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_inventario", "ver_catalogo", "marbetes")),
 ):
     """Retorna lista detallada de registros de inventario con filtros."""
     try:
@@ -100,7 +498,10 @@ async def get_inventory(
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/inventory/{record_id}")
-async def get_record(record_id: int):
+async def get_record(
+    record_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_inventario", "editar_inventario")),
+):
     """Obtiene un registro específico por su ID."""
     record = db.get_record_by_id(record_id)
     if not record:
@@ -108,7 +509,10 @@ async def get_record(record_id: int):
     return record
 
 @app.post("/api/inventory")
-async def create_record(item: InsumoCreateRequest):
+async def create_record(
+    item: InsumoCreateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("editar_inventario")),
+):
     """Crea un nuevo insumo / lote en la base de datos."""
     try:
         data = item.model_dump()
@@ -118,7 +522,11 @@ async def create_record(item: InsumoCreateRequest):
         raise HTTPException(status_code=400, detail=f"Error al crear insumo: {e}")
 
 @app.put("/api/inventory/{record_id}")
-async def update_record(record_id: int, item: InsumoUpdateRequest):
+async def update_record(
+    record_id: int,
+    item: InsumoUpdateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("editar_inventario")),
+):
     """Actualiza un insumo existente."""
     try:
         data = {k: v for k, v in item.model_dump().items() if v is not None}
@@ -130,7 +538,10 @@ async def update_record(record_id: int, item: InsumoUpdateRequest):
         raise HTTPException(status_code=400, detail=f"Error al actualizar insumo: {e}")
 
 @app.delete("/api/inventory/{record_id}")
-async def delete_record(record_id: int):
+async def delete_record(
+    record_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("editar_inventario")),
+):
     """Elimina un registro de insumo."""
     success = db.delete_record(record_id)
     if not success:
@@ -140,7 +551,9 @@ async def delete_record(record_id: int):
 @app.post("/api/clear")
 @app.post("/api/inventory/clear")
 @app.delete("/api/inventory")
-async def clear_inventory():
+async def clear_inventory(
+    current_user: Dict[str, Any] = Depends(require_any_permission("vaciar_inventario", "vaciar_sistema_total"))
+):
     """Vacía exclusivamente los datos de inventario y catálogo."""
     try:
         deleted_count = db.clear_inventory()
@@ -153,7 +566,9 @@ async def clear_inventory():
         raise HTTPException(status_code=500, detail=f"Error al vaciar inventario: {e}")
 
 @app.post("/api/movimientos/clear")
-async def clear_movimientos():
+async def clear_movimientos(
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_movimientos", "vaciar_sistema_total"))
+):
     """Vacía exclusivamente los datos de Entradas y Salidas sin alterar inventario ni catálogo."""
     try:
         deleted_count = db.clear_movimientos()
@@ -165,8 +580,31 @@ async def clear_movimientos():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al vaciar Entradas y Salidas: {e}")
 
+@app.post("/api/system/clear-all")
+async def clear_all_system(
+    keep_catalogs: bool = Query(False),
+    current_user: Dict[str, Any] = Depends(require_any_permission("vaciar_sistema_total")),
+):
+    """VACIADO TOTAL: Elimina todos los registros de todos los módulos del sistema."""
+    try:
+        res = db.clear_all_system_data(keep_catalogs=keep_catalogs)
+        total_del = sum(res.values())
+        return {
+            "status": "success",
+            "message": f"Sistema vaciado por completo. Se eliminaron {total_del} registros en total.",
+            "details": res,
+            "total_deleted": total_del
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al vaciar sistema: {e}")
+
 @app.post("/api/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: Dict[str, Any] = Depends(
+        require_any_permission("actualizar_inventario", "carga_archivos", "editar_inventario")
+    ),
+):
     """Sube y procesa un archivo Excel, CSV, PDF o JSON directamente al inventario."""
     try:
         file_path = config.DOWNLOAD_DIR / file.filename
@@ -195,7 +633,10 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error al procesar archivo: {e}")
 
 @app.post("/api/movimientos/upload-excel")
-async def upload_movimientos_excel(file: UploadFile = File(...)):
+async def upload_movimientos_excel(
+    file: UploadFile = File(...),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_movimientos")),
+):
     """Sube y procesa el archivo Excel descargado del SIIA con hojas 'Entradas' y 'Salidas'."""
     try:
         file_path = config.DOWNLOAD_DIR / file.filename
@@ -228,7 +669,10 @@ async def upload_movimientos_excel(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error al procesar archivo de Entradas y Salidas: {e}")
 
 @app.post("/api/movimientos/upload-pdf")
-async def upload_movimientos_pdf(files: List[UploadFile] = File(...)):
+async def upload_movimientos_pdf(
+    files: List[UploadFile] = File(...),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_movimientos")),
+):
     """Sube y procesa una o varias Hojas De Entrega De Pedido en formato PDF para alimentar las salidas día con día."""
     try:
         total_items = 0
@@ -269,7 +713,8 @@ async def get_movimientos(
     dia: Optional[int] = None,
     sort_by: str = "fecha_desc",
     page: int = 1,
-    page_size: int = 50
+    page_size: int = 50,
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_movimientos", "gestionar_movimientos")),
 ):
     """Obtiene el listado de entradas y salidas con filtros, búsqueda y paginación."""
     try:
@@ -280,36 +725,46 @@ async def get_movimientos(
 @app.get("/api/clues/matrix")
 async def get_clues_matrix(
     search: Optional[str] = None,
+    mes: Optional[str] = None,
+    ano: Optional[int] = None,
     dia_inicio: int = 1,
-    dia_fin: int = 30
+    dia_fin: Optional[int] = None,
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_matriz_clues")),
 ):
-    """Obtiene la matriz oficial de CLUES (CSIMB003506) con stock unificado y salidas distribuidas por día."""
+    """Obtiene la matriz oficial de CLUES (CSIMB003506) con stock unificado y salidas distribuidas por día y mes."""
     try:
-        return db.get_clues_matrix(search=search, dia_inicio=dia_inicio, dia_fin=dia_fin)
+        return db.get_clues_matrix(search=search, mes=mes, ano=ano, dia_inicio=dia_inicio, dia_fin=dia_fin)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
+def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path, mes: Optional[str] = None, ano: Optional[int] = None):
     """
     Genera el archivo Excel oficial idéntico a inventario_siplificado_cluesEnMayucula_ REPORTE DIARIO CAMBIOOOOOS.xlsx:
     - Hoja 1 'salidas por dia':
-      * Fila 1: Banner verde superior 'SALIDAS SEPTIEMBRE' sobre columnas F1:AI1.
-      * Fila 2: Encabezados en mayúsculas: CLUES, CLAVE, INVENTARIO DISPONIBLE, LOTE, F_CAD, 1..30.
+      * Fila 1: Banner verde superior 'SALIDAS {MES}' sobre columnas F1:..1.
+      * Fila 2: Encabezados en mayúsculas: CLUES, CLAVE, INVENTARIO DISPONIBLE, LOTE, F_CAD, 1..N.
       * Filas de datos: Registros consolidados por Clave y Lote.
       * Fila Inferior: 'TOTAL SALIDAS POR DÍA', con fórmulas =SUM(...) de piezas por cada día y total disponible.
       * Anchos y estilos fieles a la plantilla.
-    - Hoja 2 'Salidas': Detalle cronológico de salidas con los 23 campos oficiales.
+    - Hoja 2 'Salidas': Detalle cronológico de salidas con los 23 campos oficiales filtrado por mes y año.
     - Hoja 3 'existencia': Reporte de existencias agrupadas.
     """
+    import sqlalchemy
+
+    # 1. Obtener datos de la matriz para el mes y año solicitados
+    matrix_data = db_mgr.get_clues_matrix(mes=mes, ano=ano, dia_inicio=1, dia_fin=None)
+    rows = matrix_data.get("rows", [])
+    days_list = matrix_data.get("days", list(range(1, 31)))
+    target_mes = matrix_data.get("mes", "SEPTIEMBRE")
+    target_ano = matrix_data.get("ano", 2026)
+    num_days = len(days_list)
+    last_col_idx = 5 + num_days
+    last_col_letter = get_column_letter(last_col_idx)
+
     wb = openpyxl.Workbook()
     # Hoja 1: salidas por dia
     ws1 = wb.active
     ws1.title = "salidas por dia"
-
-    # 1. Fila 1: Banner verde superior combinado SALIDAS SEPTIEMBRE
-    ws1.merge_cells("F1:AI1")
-    f1 = ws1["F1"]
-    f1.value = "SALIDAS SEPTIEMBRE"
 
     header_fill = PatternFill(start_color="1E7145", end_color="1E7145", fill_type="solid")
     header_font = Font(name="Aptos Narrow", size=11, bold=True, color="FFFFFF")
@@ -317,15 +772,20 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
     thin_border_side = Side(style="thin", color="135824")
     cell_border = Border(left=thin_border_side, right=thin_border_side, top=thin_border_side, bottom=thin_border_side)
 
-    for col in range(6, 36):
+    # Banner verde superior combinado: SALIDAS {target_mes}
+    ws1.merge_cells(f"F1:{last_col_letter}1")
+    f1 = ws1["F1"]
+    f1.value = f"SALIDAS {target_mes}"
+
+    for col in range(6, last_col_idx + 1):
         cell = ws1.cell(1, col)
         cell.fill = header_fill
         cell.font = header_font
         cell.alignment = center_align
         cell.border = cell_border
 
-    # 2. Fila 2: Encabezados en mayúsculas
-    headers_row2 = ["CLUES", "CLAVE", "INVENTARIO DISPONIBLE", "LOTE", "F_CAD"] + [str(d) for d in range(1, 31)]
+    # Fila 2: Encabezados en mayúsculas
+    headers_row2 = ["CLUES", "CLAVE", "INVENTARIO DISPONIBLE", "LOTE", "F_CAD"] + [str(d) for d in days_list]
     ws1.row_dimensions[2].height = 26
     for idx, h in enumerate(headers_row2, 1):
         cell = ws1.cell(2, idx)
@@ -335,11 +795,7 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
         cell.alignment = center_align
         cell.border = cell_border
 
-    # 3. Filas de datos (Días 1 al 30)
-    matrix_data = db_mgr.get_clues_matrix(dia_inicio=1, dia_fin=30)
-    rows = matrix_data.get("rows", [])
-    days_list = matrix_data.get("days", list(range(1, 31)))
-
+    # Filas de datos
     data_font = Font(name="Aptos Narrow", size=10)
     data_side = Side(style="thin", color="D1D5DB")
     data_border = Border(left=data_side, right=data_side, top=data_side, bottom=data_side)
@@ -356,14 +812,14 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
         ws1.cell(current_row, 4, r.get("lote", "")).alignment = Alignment(horizontal="center")
         ws1.cell(current_row, 5, r.get("f_cad", "")).alignment = Alignment(horizontal="center")
 
-        # Días 1 al 30
+        # Días 1 al N
         for d_idx, d in enumerate(days_list, 6):
             val = float(r.get("dias", {}).get(str(d), 0.0))
             c_day = ws1.cell(current_row, d_idx, val)
             c_day.number_format = "#,##0"
             c_day.alignment = Alignment(horizontal="right")
 
-        for c in range(1, 36):
+        for c in range(1, last_col_idx + 1):
             ws1.cell(current_row, c).font = data_font
             ws1.cell(current_row, c).border = data_border
 
@@ -371,7 +827,7 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
 
     last_data_row = current_row - 1
 
-    # 4. FILA INFERIOR DE TOTALES: cuantas piezas salieron por día
+    # FILA INFERIOR DE TOTALES: cuantas piezas salieron por día
     tot_row = current_row
     ws1.row_dimensions[tot_row].height = 24
 
@@ -399,7 +855,7 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
     ws1.cell(tot_row, 4, "-").alignment = Alignment(horizontal="center", vertical="center")
     ws1.cell(tot_row, 5, "-").alignment = Alignment(horizontal="center", vertical="center")
 
-    for c_idx in range(6, 36):
+    for c_idx in range(6, last_col_idx + 1):
         col_letter = get_column_letter(c_idx)
         if last_data_row >= 3:
             c_tot_day = ws1.cell(tot_row, c_idx, f"=SUM({col_letter}3:{col_letter}{last_data_row})")
@@ -408,7 +864,7 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
         c_tot_day.number_format = "#,##0"
         c_tot_day.alignment = Alignment(horizontal="right", vertical="center")
 
-    for c in range(1, 36):
+    for c in range(1, last_col_idx + 1):
         cell = ws1.cell(tot_row, c)
         cell.fill = tot_fill
         cell.font = tot_font
@@ -420,7 +876,7 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
     ws1.column_dimensions["C"].width = 25
     ws1.column_dimensions["D"].width = 17
     ws1.column_dimensions["E"].width = 19
-    for c in range(6, 36):
+    for c in range(6, last_col_idx + 1):
         ws1.column_dimensions[get_column_letter(c)].width = 7.5
 
     # ==========================================
@@ -432,7 +888,14 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
     ws2.cell(2, 1, "Fecha de Generación")
     ws2.cell(2, 2, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     ws2.cell(3, 1, "Periodo")
-    ws2.cell(3, 2, "2026-09-01 - 2026-09-30")
+
+    m_num_map = {
+        "ENERO": 1, "FEBRERO": 2, "MARZO": 3, "ABRIL": 4, "MAYO": 5, "JUNIO": 6,
+        "JULIO": 7, "AGOSTO": 8, "SEPTIEMBRE": 9, "OCTUBRE": 10, "NOVIEMBRE": 11, "DICIEMBRE": 12
+    }
+    m_num = m_num_map.get(target_mes, 9)
+    periodo_str = f"{target_ano}-{m_num:02d}-01 - {target_ano}-{m_num:02d}-{num_days:02d}"
+    ws2.cell(3, 2, periodo_str)
 
     salidas_headers = [
         "Clave", "Clave Cliente", "Codigo Barras", "Descripción", "Lote", "Costo",
@@ -451,10 +914,19 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
 
     session = db_mgr.get_session()
     try:
+        valid_matrix_keys = {(r.get("clave"), r.get("lote")) for r in rows}
+
         # Catálogo para resolver descripciones faltantes
         desc_map = {}
         for row_desc in session.query(InsumoRecord.clave, InsumoRecord.descripcion).filter(
-            InsumoRecord.descripcion.isnot(None), InsumoRecord.descripcion != ""
+            InsumoRecord.descripcion.isnot(None), InsumoRecord.descripcion != "",
+            sqlalchemy.or_(
+                InsumoRecord.hoja_origen == "Existencias_x_Localidad",
+                sqlalchemy.and_(
+                    InsumoRecord.hoja_origen.is_(None),
+                    InsumoRecord.report_source.notlike("%test_%")
+                )
+            )
         ).all():
             c_clean = (row_desc.clave or "").strip()
             if c_clean and c_clean not in desc_map:
@@ -464,7 +936,12 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
 
         salidas_records = session.query(MovimientoRecord).filter(
             MovimientoRecord.tipo == "SALIDA",
-            MovimientoRecord.tipo_movimiento == "PEDIDO"
+            MovimientoRecord.tipo_movimiento == "PEDIDO",
+            sqlalchemy.or_(
+                MovimientoRecord.mes == target_mes,
+                MovimientoRecord.fecha.like(f"{target_ano}-{m_num:02d}%"),
+                MovimientoRecord.fecha.like(f"%/{m_num:02d}/{target_ano}%")
+            )
         ).order_by(MovimientoRecord.fecha.desc()).all()
 
         r_idx = 6
@@ -483,6 +960,10 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
             cve_val = (s.clave_cliente or s.clave or "").strip()
             # En CLUES solo se agregan claves que tienen estructura numérica oficial
             if not clues_pattern.match(cve_val):
+                continue
+
+            # REGLA ESTRICTA: Solo incluir salidas de insumos pertenecientes a Existencias_x_Localidad
+            if (cve_val, (s.lote or "").strip()) not in valid_matrix_keys:
                 continue
 
             desc_val = (s.descripcion or "").strip() or desc_map.get(cve_val, "")
@@ -531,7 +1012,19 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
             cell.border = cell_border
 
         inv_records = session.query(InsumoRecord).filter(
-            InsumoRecord.cantidad > 0
+            InsumoRecord.cantidad > 0,
+            sqlalchemy.or_(
+                InsumoRecord.hoja_origen == "Existencias_x_Localidad",
+                sqlalchemy.and_(
+                    InsumoRecord.hoja_origen.is_(None),
+                    InsumoRecord.report_source.notlike("%test_%"),
+                    sqlalchemy.or_(
+                        InsumoRecord.clave_abisa.isnot(None),
+                        InsumoRecord.report_source.like("%Ubicaci%"),
+                        InsumoRecord.report_source.like("%Existencia%")
+                    )
+                )
+            )
         ).order_by(InsumoRecord.clave.asc()).all()
         r_idx3 = 2
         for inv in inv_records:
@@ -570,8 +1063,22 @@ def generate_clues_official_excel(db_mgr: DatabaseManager, out_path: Path):
     wb.close()
 
 @app.get("/api/export")
-async def export_excel(tab: str = "tab-inventory"):
+async def export_excel(
+    tab: str = "tab-inventory",
+    mes: Optional[str] = None,
+    ano: Optional[int] = None,
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
     """Genera y descarga el archivo Excel correspondiente a la pestaña activa en la interfaz."""
+    if not current_user.get("is_superadmin"):
+        perms = current_user.get("permisos") or {}
+        if tab == "tab-movimientos" and not (perms.get("gestionar_movimientos") or perms.get("ver_movimientos")):
+            raise HTTPException(status_code=403, detail="No tiene permisos para exportar Entradas y Salidas.")
+        elif tab == "tab-clues" and not perms.get("ver_matriz_clues"):
+            raise HTTPException(status_code=403, detail="No tiene permisos para exportar la Matriz CLUES.")
+        elif tab not in ("tab-movimientos", "tab-clues") and not perms.get("exportar_inventario"):
+            raise HTTPException(status_code=403, detail="No tiene permisos para exportar Catálogo o Inventario a Excel.")
+
     try:
         today_str = datetime.date.today().strftime('%Y%m%d')
         out_path = config.BASE_DIR / f"reporte_export_{tab}.xlsx"
@@ -617,8 +1124,9 @@ async def export_excel(tab: str = "tab-inventory"):
             filename = f"entradas_y_salidas_{today_str}.xlsx"
 
         elif tab == "tab-clues":
-            generate_clues_official_excel(db, out_path)
-            filename = f"inventario_siplificado_cluesEnMayucula_REPORTE_DIARIO_{today_str}.xlsx"
+            generate_clues_official_excel(db, out_path, mes=mes, ano=ano)
+            mes_tag = f"_{mes.upper()}" if mes else "_SEPTIEMBRE"
+            filename = f"inventario_siplificado_clues{mes_tag}_REPORTE_DIARIO_{today_str}.xlsx"
 
         else: # tab-inventory por defecto
             query = "SELECT * FROM insumos_report ORDER BY id DESC"
@@ -640,6 +1148,614 @@ async def export_excel(tab: str = "tab-inventory"):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# =========================================================================
+# RUTAS API: SISTEMA PROPUESTO - CONTROL DE INVENTARIO POR MOVIMIENTOS
+# =========================================================================
+
+# --- 1. CATÁLOGOS ---
+@app.get("/api/control-movimientos/catalogo")
+async def get_control_catalogo(
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        return db.get_catalogo_movimientos(search=search)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/catalogo")
+async def create_control_catalogo(
+    item: CatalogoMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.create_catalogo_insumo(item.dict())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/control-movimientos/catalogo/{item_id}")
+async def update_control_catalogo(
+    item_id: int,
+    item: CatalogoMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_catalogo_insumo(item_id, item.dict())
+        if not res:
+            raise HTTPException(status_code=404, detail="Insumo de catálogo no encontrado")
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/catalogo/{item_id}")
+async def delete_control_catalogo(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_catalogo_insumo(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Insumo no encontrado")
+        return {"status": "success", "message": "Insumo eliminado del catálogo"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/catalogo/sync-from-insumos")
+async def sync_control_catalogo(
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        added = db.sync_catalogo_from_insumos()
+        return {"status": "success", "message": f"Se sincronizaron {added} claves nuevas desde los insumos del sistema.", "added_count": added}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/control-movimientos/proveedores")
+async def get_control_proveedores(
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        return db.get_proveedores_movimientos()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/proveedores")
+async def create_control_proveedor(
+    item: ProveedorMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.create_proveedor_mov(item.dict())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/control-movimientos/proveedores/{item_id}")
+async def update_control_proveedor(
+    item_id: int,
+    item: ProveedorMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_proveedor_mov(item_id, item.dict(exclude_unset=True))
+        if not res:
+            raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/proveedores/{item_id}")
+async def delete_control_proveedor(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_proveedor_mov(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+        return {"status": "success", "message": "Proveedor eliminado correctamente"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/control-movimientos/unidades")
+async def get_control_unidades(
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        return db.get_unidades_medida_movimientos()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/unidades")
+async def create_control_unidad(
+    item: UnidadMedidaMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.create_unidad_medida_mov(item.dict())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/control-movimientos/unidades/{item_id}")
+async def update_control_unidad(
+    item_id: int,
+    item: UnidadMedidaMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_unidad_medida_mov(item_id, item.dict(exclude_unset=True))
+        if not res:
+            raise HTTPException(status_code=404, detail="Unidad de medida no encontrada")
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/unidades/{item_id}")
+async def delete_control_unidad(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_unidad_medida_mov(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Unidad de medida no encontrada")
+        return {"status": "success", "message": "Unidad de medida eliminada correctamente"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- 2. ENTRADAS MANUALES ---
+@app.get("/api/control-movimientos/entradas")
+async def get_control_entradas(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    search: Optional[str] = Query(None),
+    only_ingresos: Optional[bool] = Query(True),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        target_ano = None if (mes and mes.upper() == "TODOS") else ano
+        return db.get_entradas_movimientos(mes=mes, ano=target_ano, search=search, only_ingresos=only_ingresos)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/entradas")
+async def create_control_entrada(
+    item: EntradaMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.create_entrada_mov(item.dict())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/control-movimientos/entradas/{item_id}")
+async def update_control_entrada(
+    item_id: int,
+    item: EntradaMovRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_entrada_mov(item_id, item.dict(exclude_unset=True))
+        if not res:
+            raise HTTPException(status_code=404, detail="Entrada no encontrada")
+        db.log_execution(
+            operation="CONTROL_UPDATE_ENTRADA",
+            status="SUCCESS",
+            file_name=f"{res.get('clave', '')} | {res.get('lote', '')}",
+            records_count=1,
+            details=f"Registro de partida #{item_id} modificado por '{current_user.get('username', 'admin')}'",
+        )
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/entradas/{item_id}")
+async def delete_control_entrada(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_entrada_mov(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Entrada no encontrada")
+        return {"status": "success", "message": "Entrada eliminada correctamente"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- 3. SALIDAS DESDE PDF (FEFO) ---
+@app.get("/api/control-movimientos/salidas-pdf")
+async def get_control_salidas_pdf(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        target_ano = None if (mes and mes.upper() == "TODOS") else ano
+        return db.get_salidas_pdf_movimientos(mes=mes, ano=target_ano, search=search)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/salidas-pdf/upload")
+async def upload_control_movimientos_pdf(
+    files: List[UploadFile] = File(...),
+    mes: Optional[str] = Form("OCTUBRE"),
+    ano: Optional[int] = Form(2026),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        total_procesados = 0
+        total_validos = 0
+        total_alertas = 0
+        total_fefo_optimo = 0
+        total_avisos_fefo = 0
+        avisos_fefo_lista = []
+        archivos_procesados = []
+
+        for file in files:
+            file_path = config.DOWNLOAD_DIR / file.filename
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+
+            doc_info, items = DataProcessor.read_hoja_pedido_pdf(file_path)
+            if items:
+                res = db.process_salidas_pdf_items(items, file.filename, mes=mes, ano=ano)
+                total_procesados += res["total_procesados"]
+                total_validos += res["total_validos"]
+                total_alertas += res["total_alertas"]
+                total_fefo_optimo += res.get("total_fefo_optimo", 0)
+                total_avisos_fefo += res.get("total_avisos_fefo", 0)
+                avisos_fefo_lista.extend(res.get("avisos_fefo", []))
+                archivos_procesados.append(file.filename)
+
+            dest = config.PROCESSED_DIR / file.filename
+            try:
+                shutil.move(str(file_path), str(dest))
+            except Exception:
+                pass
+
+        if total_procesados == 0:
+            return JSONResponse(status_code=400, content={"status": "warning", "message": "No se pudieron extraer partidas válidas de los PDFs."})
+
+        msg = f"Se procesaron {len(files)} archivo(s) PDF con {total_procesados} partidas registradas exactamente por Clave y Lote del PDF."
+        if total_avisos_fefo > 0:
+            msg += f" ⚠️ AVISO FEFO: Se detectaron {total_avisos_fefo} salidas cuyo lote en PDF no tiene la caducidad más próxima disponible en almacén."
+        else:
+            msg += " ✅ Todas las salidas cumplen con la regla FEFO o corresponden a lotes únicos."
+
+        return {
+            "status": "warning" if total_avisos_fefo > 0 else "success",
+            "message": msg,
+            "total_procesados": total_procesados,
+            "salidas_insertadas": total_procesados,
+            "archivos_procesados": len(archivos_procesados),
+            "total_validos": total_validos,
+            "total_alertas": total_alertas,
+            "total_fefo_optimo": total_fefo_optimo,
+            "total_avisos_fefo": total_avisos_fefo,
+            "avisos_fefo": avisos_fefo_lista,
+            "archivos": archivos_procesados
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al procesar PDFs para control de movimientos: {e}")
+
+@app.put("/api/control-movimientos/salidas-pdf/{item_id}")
+async def update_control_salida_pdf(
+    item_id: int,
+    item: SalidaPdfUpdateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_salida_pdf_mov(item_id, item.dict(exclude_unset=True))
+        if not res:
+            raise HTTPException(status_code=404, detail="Salida PDF no encontrada")
+        db.log_execution(
+            operation="CONTROL_UPDATE_SALIDA_PDF",
+            status="SUCCESS",
+            file_name=f"{res.get('clave', '')} | {res.get('lote_asignado', '')}",
+            records_count=1,
+            details=f"Salida PDF #{item_id} modificada por '{current_user.get('username', 'admin')}'",
+        )
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/salidas-pdf/{item_id}")
+async def delete_control_salida_pdf(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_salida_pdf_mov(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Salida PDF no encontrada")
+        return {"status": "success", "message": "Salida PDF eliminada"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/salidas-pdf/clear")
+async def clear_control_salidas_pdf(
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        count = db.clear_salidas_pdf_mov(mes=mes, ano=ano)
+        period_str = f" del periodo {mes} {ano}" if mes else " de todos los periodos"
+        return {"status": "success", "message": f"Se eliminaron {count} salidas PDF{period_str}."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- GESTIÓN DE PEDIDOS COMPLETOS (MODIFICAR O ELIMINAR PEDIDO ENTERO) ---
+@app.get("/api/control-movimientos/pedidos")
+async def get_control_pedidos(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        target_ano = None if (mes and mes.upper() == "TODOS") else ano
+        return db.get_pedidos_resumen(mes=mes, ano=target_ano, search=search)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/control-movimientos/pedido")
+async def get_control_pedido_detalle(
+    folio: str = Query(...),
+    archivo: Optional[str] = Query(None),
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        detalle = db.get_pedido_detalle(folio_pedido=folio, archivo_pdf=archivo, mes=mes, ano=ano)
+        if not detalle:
+            raise HTTPException(status_code=404, detail=f"Pedido '{folio}' no encontrado.")
+        return detalle
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/control-movimientos/pedido")
+async def update_control_pedido(
+    req: PedidoCompletoUpdateRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.update_pedido_completo(req.dict())
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/control-movimientos/pedido")
+async def delete_control_pedido(
+    folio: str = Query(...),
+    archivo: Optional[str] = Query(None),
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.delete_pedido_completo(folio_pedido=folio, archivo_pdf=archivo, mes=mes, ano=ano)
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- 4. APOYO INSTITUCIONAL ---
+@app.get("/api/control-movimientos/apoyo-institucional")
+async def get_control_apoyos(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    search: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        target_ano = None if (mes and mes.upper() == "TODOS") else ano
+        return db.get_apoyos_institucionales(mes=mes, ano=target_ano, search=search)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/apoyo-institucional")
+async def create_control_apoyo(
+    item: ApoyoInstitucionalRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        return db.create_apoyo_institucional(item.dict())
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/control-movimientos/apoyo-institucional/{item_id}")
+async def update_control_apoyo(
+    item_id: int,
+    item: ApoyoInstitucionalRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.update_apoyo_institucional(item_id, item.dict(exclude_unset=True))
+        if not res:
+            raise HTTPException(status_code=404, detail="Registro de apoyo no encontrado")
+        db.log_execution(
+            operation="CONTROL_UPDATE_APOYO",
+            status="SUCCESS",
+            file_name=f"{res.get('clave', '')} | {res.get('lote', '')}",
+            records_count=1,
+            details=f"Apoyo institucional #{item_id} modificado por '{current_user.get('username', 'admin')}'",
+        )
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/control-movimientos/apoyo-institucional/{item_id}")
+async def delete_control_apoyo(
+    item_id: int,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        ok = db.delete_apoyo_institucional(item_id)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Registro de apoyo no encontrado")
+        return {"status": "success", "message": "Apoyo institucional eliminado"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/iniciar-mes")
+async def api_iniciar_nuevo_mes(
+    data: IniciarMesRequest,
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.iniciar_nuevo_mes(
+            mes_origen=data.mes_origen,
+            ano_origen=data.ano_origen,
+            mes_destino=data.mes_destino,
+            ano_destino=data.ano_destino,
+        )
+        db.log_execution(
+            operation="CONTROL_INICIAR_MES",
+            status="SUCCESS",
+            file_name=f"{data.mes_destino} {data.ano_destino}",
+            records_count=res.get("total_partidas", 0),
+            details=f"Mes {data.mes_destino} {data.ano_destino} iniciado desde {data.mes_origen} {data.ano_origen} por '{current_user.get('username', 'admin')}' (Total inicial: {res.get('total_inventario_inicial')})",
+        )
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/control-movimientos/clear")
+async def clear_control_movimientos_endpoint(
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    clear_catalog: bool = Query(False),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        res = db.clear_control_movimientos(mes=mes, ano=ano, clear_catalog=clear_catalog)
+        tot = sum(res.values())
+        period_str = f"del periodo {mes} {ano}" if mes else "de todos los periodos"
+        return {
+            "status": "success",
+            "message": f"Se vaciaron {tot} registros de Control de Movimientos {period_str}.",
+            "details": res
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/entradas/clear")
+async def clear_control_entradas_endpoint(
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        count = db.clear_control_entradas(mes=mes, ano=ano)
+        period_str = f" del periodo {mes} {ano}" if mes else ""
+        return {"status": "success", "message": f"Se eliminaron {count} entradas manuales{period_str}."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/control-movimientos/apoyo-institucional/clear")
+async def clear_control_apoyos_endpoint(
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        count = db.clear_control_apoyos(mes=mes, ano=ano)
+        period_str = f" del periodo {mes} {ano}" if mes else ""
+        return {"status": "success", "message": f"Se eliminaron {count} registros de apoyo institucional{period_str}."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/control-movimientos/lotes-disponibles/{clave}")
+async def get_control_lotes_disponibles(
+    clave: str,
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        return db.get_lotes_disponibles_clave(clave=clave, mes=mes, ano=ano)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- 5. REPORTE DIARIO CONSOLIDADO Y EXCEL ---
+@app.get("/api/control-movimientos/matriz")
+async def get_control_matriz(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    search: Optional[str] = Query(None),
+    q: Optional[str] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        search_term = q if q is not None else search
+        return db.get_reporte_movimientos_matriz(mes=mes, ano=ano, search=search_term)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/control-movimientos/export-excel")
+async def export_control_excel(
+    mes: Optional[str] = Query("OCTUBRE"),
+    ano: Optional[int] = Query(2026),
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_control_movimientos", "gestionar_control_movimientos")),
+):
+    try:
+        stream = db.export_reporte_movimientos_excel(mes=mes, ano=ano)
+        filename = f"Control_Inventario_Movimientos_{mes}_{ano}.xlsx"
+        headers = {
+            "Content-Disposition": f"attachment; filename={filename}"
+        }
+        return StreamingResponse(
+            stream,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers=headers
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al generar Excel: {e}")
+
+@app.post("/api/control-movimientos/import-base-excel")
+async def import_control_base_excel(
+    file: Optional[UploadFile] = File(None),
+    mes: Optional[str] = Form("OCTUBRE"),
+    ano: Optional[int] = Form(2026),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        import io
+        filename_source = "INVETARIO SIMPLIFICADO OCT.xlsx"
+        if file is not None and file.filename:
+            content = await file.read()
+            excel_source = io.BytesIO(content)
+            filename_source = file.filename
+        else:
+            local_file = config.DATA_DIR / "INVETARIO_SIMPLIFICADO_OCT.xlsx"
+            if not local_file.exists():
+                raise HTTPException(status_code=404, detail="No se encontró el archivo base local INVETARIO_SIMPLIFICADO_OCT.xlsx")
+            excel_source = local_file
+
+        res = db.import_inventario_simplificado_excel(excel_source, mes=mes, ano=ano, source_name=filename_source)
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al importar base Excel: {e}")
+
 import threading
 import subprocess
 import sys
@@ -653,42 +1769,113 @@ RPA_STATE = {
     "error": None
 }
 
-def _run_rpa_task(target: Optional[str] = None):
+def _run_rpa_task(target: Optional[str] = "inventario", mode: str = "auto", fecha_inicio: Optional[str] = None, fecha_fin: Optional[str] = None):
     global RPA_STATE
     RPA_STATE["running"] = True
     RPA_STATE["status"] = "running"
-    target_text = "Entradas y Salidas" if target == "entradas_salidas" else ("Inventario" if target == "inventario" else "SIIA")
-    RPA_STATE["message"] = f"Iniciando sesión automática en {target_text}... Descargue el reporte y CIERRE LA VENTANA para importar los datos."
     RPA_STATE["error"] = None
+
+    def update_progress(msg: str):
+        RPA_STATE["message"] = msg
+        print(f"[RPA PROGRESO] {msg}")
 
     try:
         from downloader import SiiaDownloader
         from main import process_all_downloads
-        
-        # 1. Ejecutar descarga asistida con login automático y navegación
         downloader = SiiaDownloader()
-        downloader.run_interactive_session(target=target)
-        
-        # 2. Procesar descargas automáticamente
-        RPA_STATE["message"] = "Procesando archivos descargados e importando a la base de datos..."
-        process_all_downloads()
 
-        RPA_STATE["status"] = "completed"
-        RPA_STATE["message"] = "Sincronización e importación completada exitosamente."
+        if mode == "auto":
+            # ==========================================
+            # MODO 100% AUTOMÁTICO (HEADLESS - WIFI READY)
+            # ==========================================
+            if target == "inventario":
+                update_progress("Iniciando sesión silenciosa en SIIA...")
+                downloader.download_existencias_auto(localidad_id="1836", progress_callback=update_progress)
+                update_progress("Actualizando existencias en la base de datos...")
+                db.clear_inventory()
+                process_all_downloads()
+                RPA_STATE["status"] = "completed"
+                RPA_STATE["message"] = "¡Inventario sincronizado exitosamente! Existencias actualizadas."
+
+            elif target == "entradas_salidas":
+                today = datetime.date.today()
+                f_ini = fecha_inicio or today.strftime("%Y-%m-01")
+                f_fin = fecha_fin or today.strftime("%Y-%m-%d")
+
+                update_progress(f"Iniciando descarga silenciosa de Entradas y Salidas ({f_ini} al {f_fin})...")
+                downloader.download_movimientos_auto(fecha_inicio=f_ini, fecha_fin=f_fin, localidad_id="1836", progress_callback=update_progress)
+                update_progress("Importando movimientos a la base de datos...")
+                process_all_downloads()
+                RPA_STATE["status"] = "completed"
+                RPA_STATE["message"] = f"¡Entradas y Salidas ({f_ini} al {f_fin}) sincronizadas exitosamente!"
+
+            elif target == "ambos":
+                today = datetime.date.today()
+                f_ini = fecha_inicio or today.strftime("%Y-%m-01")
+                f_fin = fecha_fin or today.strftime("%Y-%m-%d")
+
+                update_progress("1/2: Descargando existencias completas...")
+                downloader.download_existencias_auto(localidad_id="1836", progress_callback=update_progress)
+
+                update_progress(f"2/2: Descargando Entradas y Salidas ({f_ini} al {f_fin})...")
+                downloader.download_movimientos_auto(fecha_inicio=f_ini, fecha_fin=f_fin, localidad_id="1836", progress_callback=update_progress)
+
+                update_progress("Importando todos los archivos a la base de datos...")
+                process_all_downloads()
+                RPA_STATE["status"] = "completed"
+                RPA_STATE["message"] = "¡Sincronización completa (Existencias + Movimientos) finalizada con éxito!"
+
+        else:
+            # ==========================================
+            # MODO INTERACTIVO (CON VENTANA EN EL SERVIDOR)
+            # ==========================================
+            target_text = "Entradas y Salidas" if target == "entradas_salidas" else ("Inventario" if target == "inventario" else "SIIA")
+            update_progress(f"Iniciando sesión interactiva en {target_text}... Descargue el reporte y cierre la ventana para importar.")
+            downloader.run_interactive_session(target=target)
+            update_progress("Procesando descargas automáticas...")
+            process_all_downloads()
+            RPA_STATE["status"] = "completed"
+            RPA_STATE["message"] = "Sincronización interactiva completada exitosamente."
+
     except Exception as e:
         RPA_STATE["status"] = "failed"
         RPA_STATE["error"] = str(e)
         RPA_STATE["message"] = f"Error en sincronización: {e}"
+        print(f"[RPA ERROR] {e}")
     finally:
         RPA_STATE["running"] = False
 
 @app.post("/api/rpa-sync")
-async def rpa_sync(force: bool = False, target: Optional[str] = None):
-    """Inicia la sesión asistida del navegador para descargar reportes de SIIA en segundo plano."""
+async def rpa_sync(
+    force: bool = False, 
+    target: Optional[str] = "inventario",
+    mode: str = "auto",
+    fecha_inicio: Optional[str] = None,
+    fecha_fin: Optional[str] = None,
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos")),
+):
+    """
+    Inicia la sincronización con SIIA.
+    - mode="auto": Descarga en segundo plano sin ventana (recomendado para uso en red WiFi).
+    - mode="interactive": Abre la ventana de Chromium en la máquina servidor.
+    """
+    if not current_user.get("is_superadmin"):
+        perms = current_user.get("permisos") or {}
+        if target in ("entradas_salidas", "ambos") and not perms.get("gestionar_movimientos"):
+            raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para sincronizar Entradas y Salidas. Solo puede actualizar Existencias de Inventario.",
+            )
+        if target == "inventario" and not perms.get("actualizar_inventario"):
+            raise HTTPException(
+                status_code=403,
+                detail="No tiene permisos para actualizar el Inventario desde SIIA.",
+            )
+
     global RPA_STATE
     if RPA_STATE["running"]:
         if not force:
-            return {"status": "busy", "message": "Ya hay una sesión de sincronización en curso. Puedes forzar el cierre si la sesión anterior quedó trabada."}
+            return {"status": "busy", "message": "Ya hay una sincronización en curso. Puedes forzar el cierre si la sesión anterior quedó trabada."}
         # Forzar cierre de la sesión anterior
         try:
             from downloader import force_kill_session
@@ -699,11 +1886,19 @@ async def rpa_sync(force: bool = False, target: Optional[str] = None):
         RPA_STATE["status"] = "cancelled"
 
     # Iniciar en hilo independiente para no bloquear el servidor FastAPI
-    threading.Thread(target=_run_rpa_task, args=(target,), daemon=True).start()
-    return {"status": "started", "message": "Se ha iniciado sesión automáticamente en SIIA. Al terminar de descargar, cierre la ventana para importar los datos."}
+    threading.Thread(
+        target=_run_rpa_task, 
+        args=(target, mode, fecha_inicio, fecha_fin), 
+        daemon=True
+    ).start()
+
+    msg = "Iniciando sincronización automática en segundo plano (WiFi)..." if mode == "auto" else "Abriendo ventana asistida de SIIA en el servidor..."
+    return {"status": "started", "message": msg, "mode": mode, "target": target}
 
 @app.post("/api/rpa-cancel")
-async def rpa_cancel():
+async def rpa_cancel(
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos"))
+):
     """Cancela y libera forzosamente cualquier sesión de RPA activa."""
     global RPA_STATE
     try:
@@ -714,25 +1909,89 @@ async def rpa_cancel():
     
     RPA_STATE["running"] = False
     RPA_STATE["status"] = "idle"
-    RPA_STATE["message"] = "Sesión cancelada y liberada. Ya puedes iniciar sesión de nuevo."
+    RPA_STATE["message"] = "Sesión cancelada y liberada. Ya puedes iniciar de nuevo."
     RPA_STATE["error"] = None
-    return {"status": "success", "message": "Sesión cerrada correctamente. Ya puedes ingresar."}
+    return {"status": "success", "message": "Sesión cerrada correctamente."}
 
 @app.get("/api/rpa-status")
-async def rpa_status():
+async def rpa_status(
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos"))
+):
     """Consulta el estado del proceso de sincronización RPA."""
     return RPA_STATE
 
+@app.get("/api/siia-config")
+async def get_siia_config(
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos"))
+):
+    """Retorna la configuración, credenciales e IP de red local para el portal SIIA."""
+    import socket
+    local_ip = "127.0.0.1"
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        pass
+
+    return {
+        "url": config.SIIA_URL,
+        "username": config.SIIA_USERNAME,
+        "password": config.SIIA_PASSWORD,
+        "url_inventario": "https://siia.abisalud.com/main.php?opc=55",
+        "url_movimientos": "https://siia.abisalud.com/main.php?opc=163",
+        "local_ip": local_ip,
+        "server_url": f"http://{local_ip}:{config.APP_PORT}"
+    }
+
 @app.get("/api/logs")
-async def get_logs():
+async def get_logs(
+    current_user: Dict[str, Any] = Depends(require_any_permission("ver_auditoria"))
+):
     """Retorna historial de auditoría."""
     try:
         return db.get_summary()["recent_logs"]
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def get_lote_font_size_grande(val: str) -> str:
+    l = len(str(val or '').strip())
+    if l <= 10:
+        return '28pt'
+    elif l <= 13:
+        return '23pt'
+    elif l <= 16:
+        return '19pt'
+    elif l <= 20:
+        return '16pt'
+    elif l <= 25:
+        return '13pt'
+    elif l <= 32:
+        return '11pt'
+    else:
+        return '9.5pt'
+
+def get_lote_font_size_chico(val: str) -> str:
+    l = len(str(val or '').strip())
+    if l <= 9:
+        return '7.8pt'
+    elif l <= 12:
+        return '6.8pt'
+    elif l <= 16:
+        return '5.8pt'
+    elif l <= 20:
+        return '5pt'
+    elif l <= 26:
+        return '4.4pt'
+    else:
+        return '3.8pt'
+
 @app.post("/api/marbetes/generate-pdf")
-async def generate_marbetes_pdf(payload: Dict[str, Any]):
+async def generate_marbetes_pdf(
+    payload: Dict[str, Any],
+    current_user: Dict[str, Any] = Depends(require_any_permission("marbetes")),
+):
     """
     Genera un archivo PDF fiel a los formatos oficiales tamaño Carta
     recibiendo la lista de marbetes y el formato ('grande' o 'chico').
@@ -746,6 +2005,7 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
     if not items:
         raise HTTPException(status_code=400, detail="No se proporcionaron marbetes para generar el PDF.")
 
+    fecha_hoy = datetime.datetime.now().strftime("%d/%m/%Y")
     items_per_page = 2 if formato == "grande" else 9
     total_pages = (len(items) + items_per_page - 1) // items_per_page
 
@@ -757,6 +2017,9 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
             cards_html = ""
             for it in page_items:
                 raw_desc = (it.get('descripcion') or '').strip()
+                it_fecha = it.get('fecha_conteo') or fecha_hoy
+                raw_cant = it.get('cantidad')
+                it_cant = '' if raw_cant is None or str(raw_cant).strip() == '' else str(raw_cant).strip()
                 # Si la descripción es excesivamente larga, recortar con elipsis para evitar que desborde y empuje a 2 páginas
                 if len(raw_desc) > 165:
                     disp_desc = raw_desc[:162].rstrip() + "..."
@@ -787,13 +2050,13 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
                         <div class="mg-col-half">Caducidad</div>
                     </div>
                     <div class="mg-lote-cad-vals">
-                        <div class="mg-lote-val">{it.get('lote', '')}</div>
-                        <div class="mg-cad-val">{it.get('caducidad', '')}</div>
+                        <div class="mg-lote-val" style="font-size: {get_lote_font_size_grande(it.get('lote', ''))};">{it.get('lote', '')}</div>
+                        <div class="mg-cad-val" style="font-size: {get_lote_font_size_grande(it.get('caducidad', ''))};">{it.get('caducidad', '')}</div>
                     </div>
                     <table class="mg-table-ctrl">
                         <tr>
                             <th class="header-col">Fecha</th>
-                            <td class="val-col first-date">{it.get('fecha_conteo', '')}</td>
+                            <td class="val-col first-date">{it_fecha}</td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
@@ -802,7 +2065,7 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
                         </tr>
                         <tr>
                             <th class="header-col">Cantidad</th>
-                            <td class="val-col first-val">{it.get('cantidad', '')}</td>
+                            <td class="val-col first-val">{it_cant}</td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
@@ -818,6 +2081,9 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
             cards_html = ""
             for it in page_items:
                 raw_desc = (it.get('descripcion') or '').strip()
+                it_fecha = it.get('fecha_conteo') or fecha_hoy
+                raw_cant = it.get('cantidad')
+                it_cant = '' if raw_cant is None or str(raw_cant).strip() == '' else str(raw_cant).strip()
                 if len(raw_desc) > 130:
                     disp_desc = raw_desc[:127].rstrip() + "..."
                 else:
@@ -840,13 +2106,13 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
                         <div class="mc-col-half">Caducidad</div>
                     </div>
                     <div class="mc-lote-cad-vals">
-                        <div class="mc-col-half" style="border-right: 1.2px solid #000000; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 2px;">{it.get('lote', '')}</div>
-                        <div class="mc-col-half" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 2px;">{it.get('caducidad', '')}</div>
+                        <div class="mc-col-half" style="border-right: 1.2px solid #000000; font-size: {get_lote_font_size_chico(it.get('lote', ''))};">{it.get('lote', '')}</div>
+                        <div class="mc-col-half" style="font-size: {get_lote_font_size_chico(it.get('caducidad', ''))};">{it.get('caducidad', '')}</div>
                     </div>
                     <table class="mc-table-ctrl">
                         <tr>
                             <th class="header-col">Fecha</th>
-                            <td class="val-col first-date">{it.get('fecha_conteo', '')}</td>
+                            <td class="val-col first-date">{it_fecha}</td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
@@ -854,7 +2120,7 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
                         </tr>
                         <tr>
                             <th class="header-col">Cant.</th>
-                            <td class="val-col first-val">{it.get('cantidad', '')}</td>
+                            <td class="val-col first-val">{it_cant}</td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
                             <td class="val-col"></td>
@@ -935,7 +2201,24 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
     .mg-col-half {{ width: 50%; padding: 0 4px; }}
     .mg-col-half:first-child {{ border-right: 1.2px solid #000000; }}
     .mg-lote-cad-vals {{ display: flex; text-align: center; height: 25mm; align-items: center; }}
-    .mg-lote-val, .mg-cad-val {{ width: 50%; font-size: 28pt; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 6px; }}
+    .mg-lote-val, .mg-cad-val {{
+        width: 50%;
+        height: 100%;
+        font-size: 28pt;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        line-height: 1.15;
+        padding: 0 4px;
+        overflow: hidden;
+    }}
     .mg-lote-val {{ border-right: 1.2px solid #000000; }}
     .mg-table-ctrl {{ width: 100%; border-collapse: collapse; margin-top: auto; }}
     .mg-table-ctrl th, .mg-table-ctrl td {{ border: 1.2px solid #000000; text-align: center; font-weight: bold; }}
@@ -977,6 +2260,19 @@ async def generate_marbetes_pdf(payload: Dict[str, Any]):
     .mc-col-half {{ width: 50%; }}
     .mc-col-half:first-child {{ border-right: 1.2px solid #000000; }}
     .mc-lote-cad-vals {{ display: flex; border-bottom: 1.2px solid #000000; font-size: 7.8pt; font-weight: bold; text-align: center; height: 7.5mm; align-items: center; }}
+    .mc-lote-cad-vals .mc-col-half {{
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        box-sizing: border-box;
+        padding: 0 2px;
+        word-break: break-all;
+        overflow-wrap: anywhere;
+        line-height: 1.1;
+        overflow: hidden;
+    }}
     .mc-table-ctrl {{ width: 100%; border-collapse: collapse; margin-top: 0; flex: 1; }}
     .mc-table-ctrl th, .mc-table-ctrl td {{ border: 1.2px solid #000000; text-align: center; font-size: 5.5pt; font-weight: bold; padding: 0 1px; vertical-align: middle; }}
     .mc-table-ctrl th.header-col {{ width: 22%; min-width: 12mm; font-size: 5.5pt; letter-spacing: -0.2px; }}

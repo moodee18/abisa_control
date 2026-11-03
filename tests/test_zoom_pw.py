@@ -99,7 +99,7 @@ body {{ margin: 0; padding: 0; font-family: Arial, sans-serif; }}
 .mg-col-half {{ width: 50%; padding: 0 4px; }}
 .mg-col-half:first-child {{ border-right: 1.2px solid #000000; }}
 .mg-lote-cad-vals {{ display: flex; text-align: center; height: 25mm; align-items: center; }}
-.mg-lote-val, .mg-cad-val {{ width: 50%; font-size: 28pt; font-weight: bold; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding: 0 6px; }}
+.mg-lote-val, .mg-cad-val {{ width: 50%; height: 100%; font-size: 28pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; box-sizing: border-box; word-break: break-all; overflow-wrap: anywhere; line-height: 1.15; padding: 0 4px; overflow: hidden; }}
 .mg-lote-val {{ border-right: 1.2px solid #000000; }}
 .mg-table-ctrl {{ width: 100%; border-collapse: collapse; margin-top: auto; }}
 .mg-table-ctrl th, .mg-table-ctrl td {{ border: 1.2px solid #000000; text-align: center; font-weight: bold; }}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - SIIA Abisalud</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #f1f5f9;
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --accent: #06b6d4;
+            --danger: #ef4444;
+            --input-bg: #f8fafc;
+            --input-border: #cbd5e1;
+            --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.08);
+        }
+
+        body.dark-mode {
+            --bg-main: #0f172a;
+            --card-bg: #1e293b;
+            --card-border: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --input-bg: #0f172a;
+            --input-border: #334155;
+            --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-main);
+            background-image:
+                radial-gradient(at 15% 15%, rgba(37, 99, 235, 0.12) 0px, transparent 50%),
+                radial-gradient(at 85% 85%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 1.25rem;
+            right: 1.25rem;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid var(--card-border);
+            background: var(--card-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            animation: cardAppear 0.28s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(12px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .login-header {
+            padding: 2rem 2rem 1.5rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--card-border);
+            background: linear-gradient(180deg, rgba(37, 99, 235, 0.06) 0%, transparent 100%);
+        }
+
+        .logo-badge {
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2563eb, #06b6d4);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.65rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+        }
+
+        .login-header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+        }
+
+        .login-header p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .login-body {
+            padding: 1.75rem 2rem 2rem 2rem;
+        }
+
+        .error-alert {
+            display: none;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.75rem 0.95rem;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #dc2626;
+            font-size: 0.84rem;
+            font-weight: 600;
+            margin-bottom: 1.15rem;
+            line-height: 1.35;
+        }
+
+        body.dark-mode .error-alert {
+            color: #fca5a5;
+        }
+
+        .form-group {
+            margin-bottom: 1.15rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.45rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i.input-icon {
+            position: absolute;
+            left: 0.9rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.72rem 2.6rem 0.72rem 2.55rem;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.93rem;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.18s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+        }
+
+        .toggle-pass-btn {
+            position: absolute;
+            right: 0.65rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.35rem;
+            font-size: 0.95rem;
+            border-radius: 6px;
+        }
+
+        .toggle-pass-btn:hover {
+            color: var(--primary);
+        }
+
+        .btn-login {
+            width: 100%;
+            margin-top: 0.4rem;
+            padding: 0.82rem 1.2rem;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+            transition: all 0.18s ease;
+        }
+
+        .btn-login:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.36);
+        }
+
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .login-footer {
+            padding: 0.95rem 2rem;
+            border-top: 1px solid var(--card-border);
+            background: var(--input-bg);
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+    <button type="button" class="theme-toggle" onclick="toggleTheme()" title="Cambiar modo claro/oscuro">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+    </button>
+
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-badge">
+                <i class="fa-solid fa-boxes-stacked"></i>
+            </div>
+            <h1>SIIA Abisalud</h1>
+            <p>Control de Acceso por Usuarios y Permisos</p>
+        </div>
+
+        <div class="login-body">
+            <div class="error-alert" id="loginErrorBox">
+                <i class="fa-solid fa-circle-exclamation" style="margin-top: 2px;"></i>
+                <span id="loginErrorText">Usuario o contraseña incorrectos.</span>
+            </div>
+
+            <form id="loginForm" onsubmit="submitLogin(event)">
+                <div class="form-group">
+                    <label for="usernameInput">Usuario</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-user input-icon"></i>
+                        <input type="text" id="usernameInput" class="form-control" placeholder="Ingresa tu usuario" autocomplete="username" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordInput">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" autocomplete="current-password" required>
+                        <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()" title="Mostrar / ocultar contraseña">
+                            <i class="fa-solid fa-eye" id="passEyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login" id="btnSubmitLogin">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Iniciar Sesión</span>
+                </button>
+            </form>
+        </div>
+
+        <div class="login-footer">
+            <i class="fa-solid fa-shield-halved" style="color: var(--primary); margin-right: 4px;"></i>
+            Sistema de Gestión de Inventario, Catálogo y Movimientos
+        </div>
+    </div>
+
+    <script>
+        function applySavedTheme() {
+            const saved = localStorage.getItem('abisalud_theme');
+            if (saved === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('abisalud_theme', isDark ? 'dark' : 'light');
+            document.getElementById('themeIcon').className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function togglePasswordVisibility() {
+            const inp = document.getElementById('passwordInput');
+            const icon = document.getElementById('passEyeIcon');
+            if (inp.type === 'password') {
+                inp.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash';
+            } else {
+                inp.type = 'password';
+                icon.className = 'fa-solid fa-eye';
+            }
+        }
+
+        function showError(msg) {
+            const box = document.getElementById('loginErrorBox');
+            const txt = document.getElementById('loginErrorText');
+            txt.textContent = msg;
+            box.style.display = 'flex';
+        }
+
+        async function submitLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('usernameInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const btn = document.getElementById('btnSubmitLogin');
+            const errBox = document.getElementById('loginErrorBox');
+
+            if (!username || !password) {
+                showError('Por favor ingresa usuario y contraseña.');
+                return;
+            }
+
+            errBox.style.display = 'none';
+            btn.disabled = true;
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Verificando acceso...</span>';
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Credenciales inválidas. Verifica tu usuario y contraseña.');
+                }
+                window.location.href = '/';
+            } catch (err) {
+                showError(err.message || 'Error al iniciar sesión.');
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+            }
+        }
+
+        applySavedTheme();
+    </script>
+</body>
+</html>
+

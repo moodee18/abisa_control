@@ -15,7 +15,7 @@ def run_tests():
     print("=== INICIANDO PRUEBAS DE ETL Y BASE DE DATOS ===")
     
     # 1. Crear carpeta de pruebas temporales
-    test_dir = BASE_DIR / "downloads"
+    test_dir = BASE_DIR / "scratch" / "test_tmp"
     test_dir.mkdir(parents=True, exist_ok=True)
     
     csv_file = test_dir / "test_reporte_insumos.csv"

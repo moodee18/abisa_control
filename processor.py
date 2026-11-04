@@ -314,8 +314,20 @@ class DataProcessor:
                         doc_info["localidad"] = loc_m.group(1).strip()
 
                 lines = text.splitlines()
-                item_pattern = re.compile(r'^(\d{7,16})\s+([0-9]{3}\.[0-9]{3}\.[0-9]{3,5}(?:\.[0-9]{2})?)\s+(.*)$')
-                tail_pattern = re.compile(r'([\d,]+(?:\.\d+)?)\s+([\d,]+(?:\.\d+)?)(?:\s+[\d,]+(?:\.\d+)?)?\s+([A-Za-z0-9\-_]+)\s+(20[2-3][0-9]-[0-1][0-9]-[0-3][0-9])\s*(.*)$')
+                # Patrón robusto para detectar inicio de partida:
+                # 1. Con código de barras (6 a 18 dígitos) seguido de clave (formato CNIS con puntos o alfanumérico como HCDTF001)
+                item_pattern = re.compile(r'^(\d{6,18})\s+([A-Za-z0-9\.\-_/]{3,35})\s+(.*)$')
+                # 2. Sin código de barras (inicia directamente con la clave)
+                item_pattern_direct = re.compile(r'^(?:([0-9]{3}\.[0-9]{3}\.[0-9]{3,5}(?:\.[0-9]{2})?)|([A-Za-z]{2,8}[0-9]{2,10}[A-Za-z0-9\-_/]*))\s+(.*)$')
+                
+                # Patrón para extraer cantidades, lote y caducidad al final de la línea o bloque
+                tail_pattern = re.compile(
+                    r'([\d,]+(?:\.\d+)?)\s+'
+                    r'([\d,]+(?:\.\d+)?)(?:\s+[\d,]+(?:\.\d+)?)?\s+'
+                    r'([A-Za-z0-9\-_\./]+)\s+'
+                    r'(20[2-3][0-9][-/.][0-1]?[0-9][-/.][0-3]?[0-9]|[0-3]?[0-9][-/.][0-1]?[0-9][-/.](?:20)?[2-3][0-9])'
+                    r'(?:\s+(.*))?$'
+                )
 
                 current = None
                 in_table = False
@@ -337,11 +349,21 @@ class DataProcessor:
                                 all_items.append(current)
                             current = {
                                 "codigo_barras": m_start.group(1),
-                                "clave_cliente": m_start.group(2),
+                                "clave_cliente": m_start.group(2).strip(),
                                 "raw_parts": [m_start.group(3)]
                             }
-                        elif current:
-                            current["raw_parts"].append(l_str)
+                        else:
+                            m_dir = item_pattern_direct.match(l_str)
+                            if m_dir:
+                                if current:
+                                    all_items.append(current)
+                                current = {
+                                    "codigo_barras": "",
+                                    "clave_cliente": (m_dir.group(1) or m_dir.group(2)).strip(),
+                                    "raw_parts": [m_dir.group(3)]
+                                }
+                            elif current:
+                                current["raw_parts"].append(l_str)
 
                 if current:
                     all_items.append(current)
@@ -353,8 +375,16 @@ class DataProcessor:
             if tm:
                 c_pedida = float(str(tm.group(1)).replace(",", ""))
                 c_surtida = float(str(tm.group(2)).replace(",", ""))
-                lote = tm.group(3)
-                caducidad = tm.group(4)
+                lote = str(tm.group(3)).strip()
+                raw_cad = str(tm.group(4)).strip()
+                caducidad = raw_cad
+                if "/" in raw_cad or (len(raw_cad.split("-")[0]) <= 2 if "-" in raw_cad else False):
+                    parts = re.split(r'[-/.]', raw_cad)
+                    if len(parts) == 3:
+                        if len(parts[0]) == 4:
+                            caducidad = f"{parts[0]}-{int(parts[1]):02d}-{int(parts[2]):02d}"
+                        elif len(parts[2]) == 4:
+                            caducidad = f"{parts[2]}-{int(parts[1]):02d}-{int(parts[0]):02d}"
                 desc = combined[:tm.start()].strip()
                 rest = tm.group(5).strip() if tm.group(5) else ""
             else:

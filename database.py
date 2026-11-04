@@ -2842,8 +2842,24 @@ class DatabaseManager:
 
                 cliente = it.get("localidad") or it.get("cliente", "")
 
-                # 1. Validación de Clave en Catálogo
-                es_valida = clave in catalog_set
+                # 1. Validación de Clave en Catálogo y enriquecimiento de descripción
+                cat_item = session.query(CatalogoInsumoMov).filter_by(clave=clave).first()
+                if not cat_item:
+                    cat_item = session.query(InsumoRecord).filter_by(clave=clave).first()
+                if cat_item and cat_item.descripcion and (not desc or len(desc) < len(cat_item.descripcion)):
+                    desc = cat_item.descripcion
+
+                es_valida = (cat_item is not None) or (clave in catalog_set)
+                if not cat_item and clave not in catalog_set:
+                    new_cat = CatalogoInsumoMov(
+                        clave=clave,
+                        descripcion=desc or f"Insumo {clave} extraído de PDF",
+                        unidad_medida="PIEZA",
+                        proveedor_predeterminado="Remisión PDF"
+                    )
+                    session.add(new_cat)
+                    catalog_set.add(clave)
+                    es_valida = True
 
                 # 2. Asignación EXACTA de Clave y Lote dada en el PDF
                 lote_pdf = str(it.get("lote", "")).strip()

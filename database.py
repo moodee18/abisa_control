@@ -4276,7 +4276,7 @@ class DatabaseManager:
             for a_item in apoyos:
                 obs = a_item.observaciones or ""
                 # Solo omitir si fue importado como saldo base de OCTUBRE (que ya vino embebido en la hoja de entradas)
-                if target_mes == "OCTUBRE" and "importado base" in obs.lower():
+                if target_mes == "OCTUBRE" and ("importado base" in obs.lower() or "apoyo importado" in obs.lower()):
                     continue
 
                 cve_k = a_item.clave.strip()

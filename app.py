@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import datetime
 import pandas as pd
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request, Response, Depends
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Query, Request, Response, Depends, Body
 from fastapi.responses import HTMLResponse, FileResponse, JSONResponse, StreamingResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -162,6 +162,7 @@ class SalidaPdfUpdateRequest(BaseModel):
 class ApoyoInstitucionalRequest(BaseModel):
     clave: str
     lote: str
+    caducidad: Optional[str] = ""
     descripcion: Optional[str] = ""
     cantidad: float
     institucion: str
@@ -1613,6 +1614,104 @@ async def delete_control_apoyo(
         if not ok:
             raise HTTPException(status_code=404, detail="Registro de apoyo no encontrado")
         return {"status": "success", "message": "Apoyo institucional eliminado"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/control-movimientos/apoyo-institucional/upload-excel")
+async def upload_control_apoyos_excel(
+    files: List[UploadFile] = File(...),
+    mes: Optional[str] = Form("NOVIEMBRE"),
+    ano: Optional[int] = Form(2026),
+    institucion: Optional[str] = Form("Apoyo Institucional"),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    if not files:
+        raise HTTPException(status_code=400, detail="No se seleccionó ningún archivo Excel.")
+
+    results = []
+    total_imported_records = 0
+    total_imported_piezas = 0.0
+
+    for file in files:
+        fname = file.filename or "archivo.xlsx"
+        if not (fname.lower().endswith(".xlsx") or fname.lower().endswith(".xls")):
+            continue
+        try:
+            content = await file.read()
+            res = db.import_apoyo_institucional_excel(
+                file_source=content,
+                filename=fname,
+                default_mes=mes or "NOVIEMBRE",
+                default_ano=ano or 2026,
+                default_institucion=institucion or "Apoyo Institucional"
+            )
+            results.append(res)
+            total_imported_records += res.get("total_partidas", 0)
+            total_imported_piezas += res.get("total_piezas", 0.0)
+        except Exception as e:
+            results.append({
+                "success": False,
+                "filename": fname,
+                "error": str(e)
+            })
+
+    db.log_execution(
+        operation="CONTROL_UPLOAD_APOYOS_EXCEL",
+        status="SUCCESS" if total_imported_records > 0 else "WARNING",
+        file_name=", ".join([f.filename for f in files]),
+        records_count=total_imported_records,
+        details=f"Se importaron {total_imported_records} partidas ({total_imported_piezas} piezas) de apoyo institucional desde Excel por '{current_user.get('username', 'admin')}'"
+    )
+
+    return {
+        "status": "success",
+        "total_files": len(files),
+        "total_partidas": total_imported_records,
+        "total_piezas": round(total_imported_piezas, 2),
+        "results": results
+    }
+
+
+@app.delete("/api/control-movimientos/apoyo-institucional/by-folio/{folio:path}")
+async def delete_control_apoyos_by_folio(
+    folio: str,
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        count = db.delete_apoyo_institucional_by_folio(folio, mes=mes, ano=ano)
+        db.log_execution(
+            operation="CONTROL_DELETE_APOYO_FOLIO",
+            status="SUCCESS",
+            file_name=folio,
+            records_count=count,
+            details=f"Se eliminó el vale completo '{folio}' ({count} partidas) por '{current_user.get('username', 'admin')}'"
+        )
+        return {"status": "success", "deleted_count": count, "message": f"Se eliminaron {count} partidas del vale '{folio}'"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.put("/api/control-movimientos/apoyo-institucional/by-folio/{folio:path}")
+async def update_control_apoyos_by_folio(
+    folio: str,
+    data: Dict[str, Any] = Body(...),
+    mes: Optional[str] = Query(None),
+    ano: Optional[int] = Query(None),
+    current_user: Dict[str, Any] = Depends(require_any_permission("gestionar_control_movimientos")),
+):
+    try:
+        count = db.update_apoyo_institucional_by_folio(folio, data, mes=mes, ano=ano)
+        db.log_execution(
+            operation="CONTROL_UPDATE_APOYO_FOLIO",
+            status="SUCCESS",
+            file_name=folio,
+            records_count=count,
+            details=f"Se actualizaron {count} partidas del vale '{folio}' por '{current_user.get('username', 'admin')}'"
+        )
+        return {"status": "success", "updated_count": count, "message": f"Se actualizaron {count} partidas del vale '{folio}'"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

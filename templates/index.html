@@ -3499,15 +3499,46 @@
                             <div>
                                 <h3 style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
                                     <i class="fa-solid fa-handshake-angle" style="color: #8b5cf6;"></i>
-                                    Captura de Apoyo Institucional (Salida Manual)
+                                    Captura de Apoyo Institucional (Salidas y Vales de Donación)
                                 </h3>
                                 <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.2rem 0 0 0;">
-                                    Registro de transferencias y apoyos a otras instituciones (IMSS, ISSSTE, Hospitales, etc.). Se descuenta como salida y alimenta automáticamente la columna "Apoyo Institucional" del reporte diario.
+                                    Importa vales de apoyo en Excel o regístralos manualmente. Cuadra por Clave, Lote y Caducidad en la columna "Apoyo Institucional" y "Fecha" del Reporte Diario. Permite modificar y eliminar vales completos o por partida.
                                 </p>
                             </div>
-                            <button type="button" class="btn btn-primary" data-perm="gestionar_control_movimientos" onclick="openModalControlApoyo()" style="background: #8b5cf6; border-color: #7c3aed;">
-                                <i class="fa-solid fa-plus"></i> Registrar Apoyo Institucional
-                            </button>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button type="button" class="btn btn-success" data-perm="gestionar_control_movimientos" onclick="openModalUploadExcelApoyo()" style="background: #10b981; border-color: #059669; font-weight: 600;">
+                                    <i class="fa-solid fa-file-excel"></i> Cargar Excel de Apoyos (Vales)
+                                </button>
+                                <button type="button" class="btn btn-primary" data-perm="gestionar_control_movimientos" onclick="openModalControlApoyo()" style="background: #8b5cf6; border-color: #7c3aed; font-weight: 600;">
+                                    <i class="fa-solid fa-plus"></i> Registrar Apoyo Manual
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Barra de Herramientas y Filtro de Vales -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; background: var(--card-bg); padding: 0.75rem 1rem; border-radius: var(--radius); border: 1px solid var(--card-border);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <label style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); margin: 0;"><i class="fa-solid fa-filter"></i> Filtrar por Vale:</label>
+                                    <select id="ctrlApoyoValeSelect" class="form-control" style="width: auto; min-width: 180px; padding: 0.35rem 0.6rem; font-size: 0.85rem;" onchange="onSelectCtrlApoyoVale(this.value)">
+                                        <option value="">Todos los Vales</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                                    <input type="text" id="ctrlApoyoSearchInput" class="form-control" style="width: 220px; padding: 0.35rem 0.6rem; font-size: 0.85rem;" placeholder="Buscar clave, lote, descripción..." oninput="onFilterCtrlApoyosSearch()">
+                                </div>
+                                <div id="ctrlApoyoValeActionsGroup" style="display: none; align-items: center; gap: 0.4rem;">
+                                    <button type="button" class="btn btn-secondary" onclick="openModalEditarValeSeleccionado()" style="font-size: 0.8rem; padding: 0.35rem 0.7rem;" title="Modificar fecha o folio de este vale completo">
+                                        <i class="fa-solid fa-pen-to-square"></i> Modificar Vale
+                                    </button>
+                                    <button type="button" class="btn btn-danger" onclick="deleteCtrlApoyoValeSeleccionado()" style="font-size: 0.8rem; padding: 0.35rem 0.7rem;" title="Eliminar todas las partidas de este vale">
+                                        <i class="fa-solid fa-trash"></i> Eliminar Vale Completo
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.82rem; color: var(--text-muted);" id="ctrlApoyoStatsText">
+                                <span id="ctrlApoyoCountPartidas">0</span> partidas &bull; <strong id="ctrlApoyoSumPiezas" style="color: #8b5cf6;">0</strong> piezas
+                            </div>
                         </div>
 
                         <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
@@ -3515,17 +3546,19 @@
                                 <thead style="position: sticky; top: 0; z-index: 10;">
                                     <tr>
                                         <th>Fecha</th>
+                                        <th>Folio / Vale</th>
                                         <th>Clave</th>
                                         <th>Descripción</th>
                                         <th>Lote</th>
+                                        <th>Caducidad</th>
                                         <th>Institución Receptora</th>
                                         <th>Cantidad</th>
-                                        <th>Folio / Observaciones</th>
+                                        <th>Observaciones</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody id="ctrlApoyosTableBody">
-                                    <tr><td colspan="8" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando registros de apoyo institucional...</td></tr>
+                                    <tr><td colspan="10" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando registros de apoyo institucional...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -4374,9 +4407,17 @@
                         </div>
                         <div class="form-group">
                             <label>Lote con Existencia *</label>
-                            <select class="form-control" id="ctrl_a_lote" required>
+                            <select class="form-control" id="ctrl_a_lote" required onchange="onCtrlApoyoLoteChange()">
                                 <option value="">Escriba la clave primero...</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Caducidad (Opcional)</label>
+                            <input type="date" class="form-control" id="ctrl_a_caducidad">
+                        </div>
+                        <div class="form-group">
+                            <label>Folio / Vale (Ej. VALE 67)</label>
+                            <input type="text" class="form-control" id="ctrl_a_folio" placeholder="Ej. VALE 67">
                         </div>
                         <div class="form-group col-span-2">
                             <label>Descripción del Insumo</label>
@@ -4396,6 +4437,101 @@
                     <button type="button" class="btn btn-secondary" onclick="closeModal('modalControlApoyo')">Cancelar</button>
                     <button type="submit" class="btn btn-primary" style="background: #8b5cf6; border-color: #7c3aed;">
                         <i class="fa-solid fa-check"></i> Registrar Salida por Apoyo
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2B: Cargar Vales de Apoyo Institucional en Excel -->
+    <div class="modal-overlay" id="modalUploadExcelApoyo">
+        <div class="modal-container" style="max-width: 620px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-file-excel" style="color: #10b981;"></i> Cargar Vales de Apoyo Institucional (Excel)</h3>
+                <button class="modal-close" onclick="closeModal('modalUploadExcelApoyo')">&times;</button>
+            </div>
+            <form id="ctrlUploadExcelApoyoForm" onsubmit="submitUploadExcelApoyo(event)">
+                <div class="modal-body">
+                    <div style="background: var(--card-bg); border: 2px dashed #10b981; border-radius: var(--radius); padding: 1.75rem; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('ctrlApoyoExcelFiles').click()" id="ctrlApoyoExcelDropZone">
+                        <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: #10b981; margin-bottom: 0.5rem;"></i>
+                        <p style="margin: 0; font-weight: 700; font-size: 0.95rem;">Haga clic o arrastre aquí sus archivos de Vales en Excel (.xlsx / .xls)</p>
+                        <p style="margin: 0.35rem 0 0 0; font-size: 0.8rem; color: var(--text-muted);">
+                            El sistema detecta automáticamente la Fecha, Folio/Vale, Claves, Lotes, Caducidades y Cantidades entregadas para cuadre directo en el Reporte Diario.
+                        </p>
+                        <input type="file" id="ctrlApoyoExcelFiles" multiple accept=".xlsx,.xls" style="display: none;" onchange="handleCtrlApoyoExcelSelected(event)">
+                    </div>
+
+                    <div id="ctrlApoyoExcelFileList" style="margin-top: 1rem; max-height: 180px; overflow-y: auto; display: none; border: 1px solid var(--card-border); border-radius: var(--radius); padding: 0.5rem;"></div>
+
+                    <div class="form-grid" style="margin-top: 1rem;">
+                        <div class="form-group">
+                            <label>Mes de Surtimiento / Aplicación</label>
+                            <select class="form-control" id="ctrlApoyoExcelMes">
+                                <option value="OCTUBRE">OCTUBRE</option>
+                                <option value="NOVIEMBRE" selected>NOVIEMBRE</option>
+                                <option value="DICIEMBRE">DICIEMBRE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Año</label>
+                            <input type="number" class="form-control" id="ctrlApoyoExcelAno" value="2026">
+                        </div>
+                        <div class="form-group col-span-2">
+                            <label>Institución Receptora Predeterminada</label>
+                            <input type="text" class="form-control" id="ctrlApoyoExcelInstitucion" value="Apoyo Institucional" placeholder="Ej. IMSS BIENESTAR / ISSSTE / SSA / Apoyo Institucional">
+                        </div>
+                    </div>
+
+                    <div id="ctrlApoyoExcelProgress" style="display: none; margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                            <span id="ctrlApoyoExcelProgressText">Procesando vales...</span>
+                            <span id="ctrlApoyoExcelProgressPercent">0%</span>
+                        </div>
+                        <div class="progress-bar-container" style="height: 8px; background: var(--card-border); border-radius: 4px; overflow: hidden;">
+                            <div id="ctrlApoyoExcelProgressBar" style="width: 0%; height: 100%; background: #10b981; transition: width 0.3s;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalUploadExcelApoyo')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnSubmitApoyoExcel" style="background: #10b981; border-color: #059669; font-weight: 600;">
+                        <i class="fa-solid fa-upload"></i> Importar Vales
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 2C: Modificar Vale Completo -->
+    <div class="modal-overlay" id="modalEditarValeCompleto">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-pen-to-square" style="color: #8b5cf6;"></i> Modificar Vale Completo</h3>
+                <button class="modal-close" onclick="closeModal('modalEditarValeCompleto')">&times;</button>
+            </div>
+            <form id="formEditarValeCompleto" onsubmit="submitModificarValeCompleto(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="editValeFolioOriginal">
+                    <div class="form-group">
+                        <label>Folio / Nombre del Vale *</label>
+                        <input type="text" class="form-control" id="editValeFolioNuevo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Salida (Aplica a todas las partidas)</label>
+                        <input type="date" class="form-control" id="editValeFecha">
+                    </div>
+                    <div class="form-group">
+                        <label>Institución Receptora (Aplica a todas las partidas)</label>
+                        <input type="text" class="form-control" id="editValeInstitucion">
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.5rem 0 0 0;">
+                        <i class="fa-solid fa-circle-info"></i> Esta acción actualizará los datos generales de todas las partidas registradas bajo este vale sin alterar las cantidades.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('modalEditarValeCompleto')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" style="background: #8b5cf6; border-color: #7c3aed; font-weight: 600;">
+                        <i class="fa-solid fa-save"></i> Guardar Cambios en Vale
                     </button>
                 </div>
             </form>
@@ -7910,23 +8046,105 @@
             tbody.innerHTML = html;
         }
 
-        // 7. Cargar Apoyo Institucional
+        // 7. Cargar y Gestionar Apoyo Institucional (Vales y Manuales)
+        let ctrlApoyoSelectedVale = '';
+        let ctrlApoyoSearchQuery = '';
+
         async function loadControlApoyos() {
             const tbody = document.getElementById('ctrlApoyosTableBody');
             if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando apoyos...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando registros de apoyo institucional...</td></tr>';
 
-            const mes = document.getElementById('ctrlMonthSelect')?.value || 'OCTUBRE';
+            const mes = document.getElementById('ctrlMonthSelect')?.value || 'NOVIEMBRE';
             const ano = document.getElementById('ctrlYearSelect')?.value || '2026';
 
             try {
                 const res = await fetch(`/api/control-movimientos/apoyo-institucional?mes=${encodeURIComponent(mes)}&ano=${encodeURIComponent(ano)}`);
                 const data = await res.json();
                 ctrlApoyosData = Array.isArray(data) ? data : (data.items || []);
-                renderControlApoyosTable(ctrlApoyosData);
+
+                // Rellenar dropdown de vales disponibles
+                populateCtrlApoyoValeSelect();
+
+                // Filtrar y renderizar
+                filterAndRenderControlApoyos();
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i><br>Error al cargar apoyos: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="empty-state" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i><br>Error al cargar apoyos: ${err.message}</td></tr>`;
             }
+        }
+
+        function populateCtrlApoyoValeSelect() {
+            const selectEl = document.getElementById('ctrlApoyoValeSelect');
+            if (!selectEl) return;
+
+            const currentVal = ctrlApoyoSelectedVale;
+            const valesSet = new Set();
+            (ctrlApoyosData || []).forEach(a => {
+                const fol = (a.folio_documento || '').trim();
+                if (fol) valesSet.add(fol);
+            });
+
+            const sortedVales = Array.from(valesSet).sort();
+            let optHtml = '<option value="">Todos los Vales (' + (ctrlApoyosData || []).length + ' partidas)</option>';
+            sortedVales.forEach(v => {
+                const count = ctrlApoyosData.filter(a => (a.folio_documento || '').trim() === v).length;
+                optHtml += `<option value="${_escAttr(v)}" ${v === currentVal ? 'selected' : ''}>${_escAttr(v)} (${count} partidas)</option>`;
+            });
+
+            selectEl.innerHTML = optHtml;
+
+            const actionsGrp = document.getElementById('ctrlApoyoValeActionsGroup');
+            if (actionsGrp) {
+                actionsGrp.style.display = currentVal ? 'inline-flex' : 'none';
+            }
+        }
+
+        function onSelectCtrlApoyoVale(vale) {
+            ctrlApoyoSelectedVale = (vale || '').trim();
+            const actionsGrp = document.getElementById('ctrlApoyoValeActionsGroup');
+            if (actionsGrp) {
+                actionsGrp.style.display = ctrlApoyoSelectedVale ? 'inline-flex' : 'none';
+            }
+            filterAndRenderControlApoyos();
+        }
+
+        function onFilterCtrlApoyosSearch() {
+            const input = document.getElementById('ctrlApoyoSearchInput');
+            ctrlApoyoSearchQuery = input ? input.value.trim().toLowerCase() : '';
+            filterAndRenderControlApoyos();
+        }
+
+        function filterAndRenderControlApoyos() {
+            let items = ctrlApoyosData || [];
+
+            if (ctrlApoyoSelectedVale) {
+                items = items.filter(a => (a.folio_documento || '').trim().toLowerCase() === ctrlApoyoSelectedVale.toLowerCase());
+            }
+
+            if (ctrlApoyoSearchQuery) {
+                const q = ctrlApoyoSearchQuery;
+                items = items.filter(a => {
+                    const cve = String(a.clave || '').toLowerCase();
+                    const lot = String(a.lote || '').toLowerCase();
+                    const cad = String(a.caducidad || '').toLowerCase();
+                    const desc = String(a.descripcion || '').toLowerCase();
+                    const inst = String(a.institucion || '').toLowerCase();
+                    const fol = String(a.folio_documento || '').toLowerCase();
+                    const obs = String(a.observaciones || '').toLowerCase();
+                    return cve.includes(q) || lot.includes(q) || cad.includes(q) || desc.includes(q) || inst.includes(q) || fol.includes(q) || obs.includes(q);
+                });
+            }
+
+            // Actualizar contadores
+            const countEl = document.getElementById('ctrlApoyoCountPartidas');
+            const sumEl = document.getElementById('ctrlApoyoSumPiezas');
+            if (countEl) countEl.textContent = formatNumber(items.length);
+            if (sumEl) {
+                const totalPiezas = items.reduce((acc, it) => acc + (parseFloat(it.cantidad) || 0), 0);
+                sumEl.textContent = formatNumber(totalPiezas);
+            }
+
+            renderControlApoyosTable(items);
         }
 
         function renderControlApoyosTable(items) {
@@ -7934,30 +8152,257 @@
             if (!tbody) return;
 
             if (!items || items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-handshake-angle"></i><br>No hay registros de apoyo institucional. Haga clic en "+ Registrar Apoyo Institucional".</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state"><i class="fa-solid fa-handshake-angle"></i><br>No se encontraron registros de apoyo institucional. Puede cargar un archivo Excel de vales o registrar un apoyo manual.</td></tr>';
                 return;
             }
 
             let html = '';
             items.forEach(a => {
+                const fol = a.folio_documento || '';
                 html += `<tr>
-                    <td>${a.fecha || '-'}</td>
-                    <td style="font-weight: 700; font-family: monospace;">${a.clave || ''}</td>
-                    <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis;" title="${a.descripcion || ''}">${a.descripcion || ''}</td>
-                    <td style="font-weight: 700;">${a.lote || ''}</td>
-                    <td style="font-weight: 600; color: #8b5cf6;">${a.institucion || ''}</td>
-                    <td style="text-align: right; font-weight: 800; color: #8b5cf6;">${formatNumber(a.cantidad || 0)}</td>
-                    <td>${a.observaciones || a.folio_documento || '-'}</td>
+                    <td><span style="font-weight: 600;">${a.fecha || '-'}</span></td>
+                    <td>${fol ? `<span style="font-weight: 700; color: #7c3aed; background: rgba(124,58,237,0.1); padding: 2px 7px; border-radius: 4px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-receipt"></i> ${_escAttr(fol)}</span>` : '<span style="color: var(--text-muted);">-</span>'}</td>
+                    <td style="font-weight: 700; font-family: monospace; color: var(--primary);">${_escAttr(a.clave || '')}</td>
+                    <td style="max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${_escAttr(a.descripcion || '')}">${_escAttr(a.descripcion || '-')}</td>
+                    <td style="font-weight: 700; font-family: monospace;">${_escAttr(a.lote || '')}</td>
+                    <td><span style="font-size: 0.82rem; font-family: monospace; color: ${a.caducidad ? 'inherit' : 'var(--text-muted)'};">${_escAttr(a.caducidad || 'S/F')}</span></td>
+                    <td style="font-weight: 600; color: #8b5cf6;">${_escAttr(a.institucion || '-')}</td>
+                    <td style="text-align: right; font-weight: 800; color: #8b5cf6; font-size: 0.95rem;">${formatNumber(a.cantidad || 0)}</td>
+                    <td style="font-size: 0.78rem; color: var(--text-muted); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${_escAttr(a.observaciones || '')}">${_escAttr(a.observaciones || '-')}</td>
                     <td>
                         ${hasPerm('gestionar_control_movimientos') ? `
                         <div class="action-btn-group">
-                            <button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('apoyos', ${a.id})" title="Modificar registro"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button type="button" class="btn-action btn-delete" onclick="deleteControlApoyo(${a.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                            <button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('apoyos', ${a.id})" title="Modificar partida individual"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button type="button" class="btn-action btn-delete" onclick="deleteControlApoyo(${a.id})" title="Eliminar partida individual"><i class="fa-solid fa-trash"></i></button>
+                            ${fol ? `<button type="button" class="btn-action" style="color: #7c3aed; background: rgba(124,58,237,0.12);" onclick="deleteControlApoyoVale('${_escAttr(fol)}')" title="Eliminar Vale Completo (${_escAttr(fol)})"><i class="fa-solid fa-folder-minus"></i></button>` : ''}
                         </div>` : '-'}
                     </td>
                 </tr>`;
             });
             tbody.innerHTML = html;
+        }
+
+        // Operaciones sobre Vale Completo
+        function openModalEditarValeSeleccionado() {
+            if (!ctrlApoyoSelectedVale) {
+                showToast("Por favor seleccione un vale primero en el filtro.", "warning");
+                return;
+            }
+
+            const valeItems = ctrlApoyosData.filter(a => (a.folio_documento || '').trim().toLowerCase() === ctrlApoyoSelectedVale.toLowerCase());
+            const sample = valeItems[0] || {};
+
+            document.getElementById('editValeFolioOriginal').value = ctrlApoyoSelectedVale;
+            document.getElementById('editValeFolioNuevo').value = ctrlApoyoSelectedVale;
+            document.getElementById('editValeFecha').value = sample.fecha || '';
+            document.getElementById('editValeInstitucion').value = sample.institucion || '';
+
+            openModal('modalEditarValeCompleto');
+        }
+
+        async function submitModificarValeCompleto(e) {
+            e.preventDefault();
+            const origFolio = document.getElementById('editValeFolioOriginal').value.trim();
+            const nuevoFolio = document.getElementById('editValeFolioNuevo').value.trim();
+            const nuevaFecha = document.getElementById('editValeFecha').value;
+            const nuevaInst = document.getElementById('editValeInstitucion').value.trim();
+
+            if (!nuevoFolio) {
+                showToast("El folio del vale es obligatorio.", "warning");
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/control-movimientos/apoyo-institucional/by-folio/${encodeURIComponent(origFolio)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nuevo_folio: nuevoFolio,
+                        fecha: nuevaFecha,
+                        institucion: nuevaInst
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Error al actualizar vale');
+
+                showToast(`Vale actualizado: ${data.updated_count || 'Todas las'} partidas modificadas`, 'success');
+                closeModal('modalEditarValeCompleto');
+                ctrlApoyoSelectedVale = nuevoFolio;
+                loadControlApoyos();
+                loadControlMatriz();
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        async function deleteCtrlApoyoValeSeleccionado() {
+            if (!ctrlApoyoSelectedVale) return;
+            deleteControlApoyoVale(ctrlApoyoSelectedVale);
+        }
+
+        async function deleteControlApoyoVale(folio) {
+            if (!folio) return;
+            const count = ctrlApoyosData.filter(a => (a.folio_documento || '').trim().toLowerCase() === folio.toLowerCase()).length;
+            if (!confirm(`¿Está seguro de eliminar COMPLETAMENTE el vale '${folio}'?\nSe eliminarán todas sus ${count} partidas registradas y se revertirán sus cantidades en el Reporte Diario.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/control-movimientos/apoyo-institucional/by-folio/${encodeURIComponent(folio)}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Error al eliminar vale');
+
+                showToast(`Vale '${folio}' eliminado correctamente (${data.deleted_count || count} partidas)`, 'info');
+                if (ctrlApoyoSelectedVale.toLowerCase() === folio.toLowerCase()) {
+                    ctrlApoyoSelectedVale = '';
+                }
+                loadControlApoyos();
+                loadControlMatriz();
+            } catch (err) {
+                showToast(`Error: ${err.message}`, 'error');
+            }
+        }
+
+        // Carga de Excel de Vales
+        let ctrlApoyoExcelFilesList = [];
+
+        function openModalUploadExcelApoyo() {
+            ctrlApoyoExcelFilesList = [];
+            const listEl = document.getElementById('ctrlApoyoExcelFileList');
+            if (listEl) { listEl.style.display = 'none'; listEl.innerHTML = ''; }
+            const prog = document.getElementById('ctrlApoyoExcelProgress');
+            if (prog) prog.style.display = 'none';
+            const btn = document.getElementById('btnSubmitApoyoExcel');
+            if (btn) btn.disabled = true;
+
+            // Sincronizar mes y año con el selector global
+            const mesSel = document.getElementById('ctrlMonthSelect')?.value || 'NOVIEMBRE';
+            const anoSel = document.getElementById('ctrlYearSelect')?.value || '2026';
+            const mInp = document.getElementById('ctrlApoyoExcelMes');
+            if (mInp) mInp.value = mesSel;
+            const aInp = document.getElementById('ctrlApoyoExcelAno');
+            if (aInp) aInp.value = anoSel;
+
+            openModal('modalUploadExcelApoyo');
+        }
+
+        function handleCtrlApoyoExcelSelected(e) {
+            const files = Array.from(e.target.files || []);
+            if (files.length === 0) return;
+            ctrlApoyoExcelFilesList = files;
+            renderCtrlApoyoExcelFileList();
+        }
+
+        function renderCtrlApoyoExcelFileList() {
+            const listEl = document.getElementById('ctrlApoyoExcelFileList');
+            const btn = document.getElementById('btnSubmitApoyoExcel');
+            if (!listEl) return;
+
+            if (ctrlApoyoExcelFilesList.length === 0) {
+                listEl.style.display = 'none';
+                listEl.innerHTML = '';
+                if (btn) btn.disabled = true;
+                return;
+            }
+
+            listEl.style.display = 'block';
+            let html = `<div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 0.4rem; color: #10b981;">Archivos seleccionados (${ctrlApoyoExcelFilesList.length}):</div>`;
+            ctrlApoyoExcelFilesList.forEach((f, idx) => {
+                html += `<div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; padding: 3px 0; border-bottom: 1px dashed var(--card-border);">
+                    <span><i class="fa-solid fa-file-excel" style="color: #10b981; margin-right: 5px;"></i> ${f.name} <small style="color: var(--text-muted);">(${(f.size/1024).toFixed(1)} KB)</small></span>
+                    <button type="button" onclick="removeCtrlApoyoExcelFile(${idx})" style="background: none; border: none; color: var(--danger); cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+                </div>`;
+            });
+            listEl.innerHTML = html;
+            if (btn) btn.disabled = false;
+        }
+
+        function removeCtrlApoyoExcelFile(idx) {
+            ctrlApoyoExcelFilesList.splice(idx, 1);
+            renderCtrlApoyoExcelFileList();
+        }
+
+        // Setup Drag & Drop para Excel de Apoyos
+        document.addEventListener('DOMContentLoaded', () => {
+            const dz = document.getElementById('ctrlApoyoExcelDropZone');
+            if (dz) {
+                ['dragenter', 'dragover'].forEach(evt => {
+                    dz.addEventListener(evt, e => { e.preventDefault(); dz.style.borderColor = '#059669'; dz.style.background = 'rgba(16,185,129,0.06)'; });
+                });
+                ['dragleave', 'drop'].forEach(evt => {
+                    dz.addEventListener(evt, e => { e.preventDefault(); dz.style.borderColor = '#10b981'; dz.style.background = 'var(--card-bg)'; });
+                });
+                dz.addEventListener('drop', e => {
+                    if (e.dataTransfer && e.dataTransfer.files) {
+                        const dropped = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.xlsx') || f.name.endsWith('.xls'));
+                        if (dropped.length > 0) {
+                            ctrlApoyoExcelFilesList = dropped;
+                            renderCtrlApoyoExcelFileList();
+                        }
+                    }
+                });
+            }
+        });
+
+        async function submitUploadExcelApoyo(e) {
+            e.preventDefault();
+            if (ctrlApoyoExcelFilesList.length === 0) {
+                showToast("Seleccione al menos un archivo Excel de vale.", "warning");
+                return;
+            }
+
+            const mes = document.getElementById('ctrlApoyoExcelMes')?.value || 'NOVIEMBRE';
+            const ano = document.getElementById('ctrlApoyoExcelAno')?.value || '2026';
+            const inst = document.getElementById('ctrlApoyoExcelInstitucion')?.value.trim() || 'Apoyo Institucional';
+
+            const formData = new FormData();
+            ctrlApoyoExcelFilesList.forEach(file => {
+                formData.append('files', file);
+            });
+            formData.append('mes', mes);
+            formData.append('ano', ano);
+            formData.append('institucion', inst);
+
+            const prog = document.getElementById('ctrlApoyoExcelProgress');
+            const bar = document.getElementById('ctrlApoyoExcelProgressBar');
+            const pText = document.getElementById('ctrlApoyoExcelProgressText');
+            const pPct = document.getElementById('ctrlApoyoExcelProgressPercent');
+            const btn = document.getElementById('btnSubmitApoyoExcel');
+
+            if (prog) prog.style.display = 'block';
+            if (bar) bar.style.width = '50%';
+            if (pPct) pPct.textContent = '50%';
+            if (pText) pText.textContent = 'Procesando vales y cuadrando en reporte diario...';
+            if (btn) btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/control-movimientos/apoyo-institucional/upload-excel', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Error al procesar archivos');
+
+                if (bar) bar.style.width = '100%';
+                if (pPct) pPct.textContent = '100%';
+
+                showToast(`¡Éxito! Se importaron ${formatNumber(data.total_partidas || 0)} partidas (${formatNumber(data.total_piezas || 0)} piezas) en ${data.total_files} archivo(s)`, 'success');
+                closeModal('modalUploadExcelApoyo');
+
+                // Recargar apoyos y matriz del mes seleccionado
+                const globalMonthSelect = document.getElementById('ctrlMonthSelect');
+                if (globalMonthSelect && globalMonthSelect.value !== mes) {
+                    globalMonthSelect.value = mes;
+                }
+                loadControlApoyos();
+                loadControlMatriz();
+            } catch (err) {
+                showToast(`Error al importar vales: ${err.message}`, 'error');
+                if (prog) prog.style.display = 'none';
+                if (btn) btn.disabled = false;
+            }
         }
 
         // 8. Cargar Pestaña de Catálogos (Claves, Proveedores, Unidades)
@@ -8076,12 +8521,26 @@
                 const res = await fetch(`/api/control-movimientos/lotes-disponibles/${encodeURIComponent(clave)}`);
                 const lotes = await res.json();
                 if (lotes && lotes.length > 0) {
-                    loteSelect.innerHTML = lotes.map(l => `<option value="${l.lote}">${l.lote} | Cad: ${l.fecha_caducidad || 'S/F'} | Disp: ${formatNumber(l.disponible)} ${l.unidad_medida}</option>`).join('');
+                    loteSelect.innerHTML = lotes.map(l => `<option value="${l.lote}" data-caducidad="${l.fecha_caducidad || ''}">${l.lote} | Cad: ${l.fecha_caducidad || 'S/F'} | Disp: ${formatNumber(l.disponible)} ${l.unidad_medida}</option>`).join('');
+                    const cadInp = document.getElementById('ctrl_a_caducidad');
+                    if (cadInp && lotes[0].fecha_caducidad) {
+                        cadInp.value = lotes[0].fecha_caducidad;
+                    }
                 } else {
                     loteSelect.innerHTML = '<option value="">Sin lotes con stock para esta clave</option>';
                 }
             } catch (err) {
                 console.error("Error al consultar lotes disponibles:", err);
+            }
+        }
+
+        function onCtrlApoyoLoteChange() {
+            const loteSelect = document.getElementById('ctrl_a_lote');
+            const cadInp = document.getElementById('ctrl_a_caducidad');
+            if (!loteSelect || !cadInp) return;
+            const opt = loteSelect.options[loteSelect.selectedIndex];
+            if (opt && opt.getAttribute('data-caducidad')) {
+                cadInp.value = opt.getAttribute('data-caducidad');
             }
         }
 
@@ -8233,10 +8692,12 @@
                 fecha: document.getElementById('ctrl_a_fecha').value,
                 clave: document.getElementById('ctrl_a_clave').value.trim(),
                 lote: document.getElementById('ctrl_a_lote').value.trim(),
+                caducidad: document.getElementById('ctrl_a_caducidad')?.value.trim() || '',
                 descripcion: document.getElementById('ctrl_a_descripcion').value.trim(),
                 institucion: document.getElementById('ctrl_a_institucion').value.trim(),
                 cantidad: parseFloat(document.getElementById('ctrl_a_cantidad').value || 0),
-                folio_observaciones: document.getElementById('ctrl_a_folio').value.trim()
+                folio_documento: document.getElementById('ctrl_a_folio')?.value.trim() || '',
+                folio_observaciones: document.getElementById('ctrl_a_folio')?.value.trim() || ''
             };
 
             try {
@@ -10351,6 +10812,10 @@
                             <input type="text" id="mod_apo_lote" value="${_escAttr(item.lote)}" required style="font-weight:700;">
                         </div>
                         <div class="ctrl-mod-field">
+                            <label>Caducidad</label>
+                            <input type="text" id="mod_apo_caducidad" placeholder="YYYY-MM-DD" value="${_escAttr(item.caducidad || '')}">
+                        </div>
+                        <div class="ctrl-mod-field">
                             <label>Institución Receptora *</label>
                             <input type="text" id="mod_apo_institucion" value="${_escAttr(item.institucion || '')}" required>
                         </div>
@@ -10603,6 +11068,7 @@
                 payload = {
                     clave: document.getElementById('mod_apo_clave')?.value.trim() || '',
                     lote: document.getElementById('mod_apo_lote')?.value.trim() || '',
+                    caducidad: document.getElementById('mod_apo_caducidad')?.value.trim() || '',
                     institucion: document.getElementById('mod_apo_institucion')?.value.trim() || '',
                     cantidad: parseFloat(document.getElementById('mod_apo_cantidad')?.value || '0') || 0,
                     fecha: document.getElementById('mod_apo_fecha')?.value.trim() || '',

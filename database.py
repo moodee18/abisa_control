@@ -398,6 +398,7 @@ class ApoyoInstitucionalMov(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     clave = Column(String(100), index=True, nullable=False)
     lote = Column(String(100), index=True, nullable=False)
+    caducidad = Column(String(50), nullable=True)
     descripcion = Column(Text, nullable=True)
     cantidad = Column(Float, default=0.0)
     institucion = Column(String(200), index=True, nullable=False)
@@ -414,6 +415,7 @@ class ApoyoInstitucionalMov(Base):
             "id": self.id,
             "clave": self.clave,
             "lote": self.lote,
+            "caducidad": self.caducidad or "",
             "descripcion": self.descripcion or "",
             "cantidad": float(self.cantidad or 0.0),
             "institucion": self.institucion,
@@ -685,6 +687,10 @@ class DatabaseManager:
                         conn.exec_driver_sql(f"ALTER TABLE entradas_movimientos ADD COLUMN {col} {col_type}")
                     except Exception:
                         pass
+                try:
+                    conn.exec_driver_sql("ALTER TABLE apoyo_institucional_movimientos ADD COLUMN caducidad VARCHAR(50)")
+                except Exception:
+                    pass
         except Exception:
             pass
 
@@ -3483,6 +3489,7 @@ class DatabaseManager:
             institucion = str(data.get("institucion", "")).strip()
             cantidad = float(data.get("cantidad", 0.0) or 0.0)
             fecha = str(data.get("fecha", datetime.date.today().strftime("%Y-%m-%d"))).strip()
+            caducidad = str(data.get("caducidad") or "").strip() or None
 
             if not clave or not lote or not institucion:
                 raise ValueError("La Clave, el Lote y la Institución son obligatorios.")
@@ -3511,6 +3518,7 @@ class DatabaseManager:
             new_apoyo = ApoyoInstitucionalMov(
                 clave=clave,
                 lote=lote,
+                caducidad=caducidad,
                 descripcion=descripcion,
                 cantidad=cantidad,
                 institucion=institucion,
@@ -3548,6 +3556,9 @@ class DatabaseManager:
                 if not lot:
                     raise ValueError("El Lote no puede quedar vacío.")
                 item.lote = lot
+
+            if "caducidad" in data:
+                item.caducidad = str(data["caducidad"]).strip() or None
 
             if "institucion" in data and data.get("institucion") is not None:
                 inst = str(data["institucion"]).strip()
@@ -3590,6 +3601,314 @@ class DatabaseManager:
 
             session.commit()
             return item.to_dict()
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def delete_apoyo_institucional_by_folio(self, folio: str, mes: Optional[str] = None, ano: Optional[int] = None) -> int:
+        session = self.get_session()
+        try:
+            f_norm = str(folio or "").strip().lower()
+            if not f_norm:
+                return 0
+            q = session.query(ApoyoInstitucionalMov).filter(
+                func.lower(ApoyoInstitucionalMov.folio_documento) == f_norm
+            )
+            if mes and mes.upper() != "TODOS":
+                q = q.filter(ApoyoInstitucionalMov.mes == mes.upper())
+            if ano:
+                q = q.filter(ApoyoInstitucionalMov.ano == ano)
+            count = q.delete(synchronize_session=False)
+            session.commit()
+            return count
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def update_apoyo_institucional_by_folio(self, folio: str, data: Dict[str, Any], mes: Optional[str] = None, ano: Optional[int] = None) -> int:
+        session = self.get_session()
+        try:
+            f_norm = str(folio or "").strip().lower()
+            if not f_norm:
+                return 0
+            q = session.query(ApoyoInstitucionalMov).filter(
+                func.lower(ApoyoInstitucionalMov.folio_documento) == f_norm
+            )
+            if mes and mes.upper() != "TODOS":
+                q = q.filter(ApoyoInstitucionalMov.mes == mes.upper())
+            if ano:
+                q = q.filter(ApoyoInstitucionalMov.ano == ano)
+            items = q.all()
+            if not items:
+                return 0
+
+            nuevo_folio = str(data.get("nuevo_folio") or data.get("folio_documento") or "").strip()
+            nueva_fecha = str(data.get("fecha") or "").strip()
+            nueva_institucion = str(data.get("institucion") or "").strip()
+            nuevo_mes = str(data.get("mes") or "").strip().upper() if data.get("mes") else None
+            nuevo_ano = int(data.get("ano")) if data.get("ano") else None
+
+            for it in items:
+                if nuevo_folio:
+                    it.folio_documento = nuevo_folio
+                if nueva_fecha:
+                    it.fecha = nueva_fecha
+                    try:
+                        m_dia = re.search(r'\b[0-3]?[0-9]\b', nueva_fecha.split("-")[-1])
+                        if m_dia:
+                            it.dia = max(1, min(31, int(m_dia.group(0))))
+                    except Exception:
+                        pass
+                if nueva_institucion:
+                    it.institucion = nueva_institucion
+                if nuevo_mes:
+                    it.mes = nuevo_mes
+                if nuevo_ano:
+                    it.ano = nuevo_ano
+
+            session.commit()
+            return len(items)
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+
+    def import_apoyo_institucional_excel(
+        self,
+        file_source,
+        filename: str,
+        default_mes: str = "NOVIEMBRE",
+        default_ano: int = 2026,
+        default_institucion: str = "Apoyo Institucional"
+    ) -> Dict[str, Any]:
+        """
+        Importa un archivo Excel de Apoyo Institucional (por ejemplo VALE 67.xlsx).
+        Extrae Fecha, Folio/Vale, Clave, Lote, Caducidad y Cantidad.
+        Registra cada partida en apoyo_institucional_movimientos con trazabilidad total.
+        """
+        import io
+        import openpyxl
+
+        from pathlib import Path
+        if isinstance(file_source, (str, Path)):
+            wb = openpyxl.load_workbook(str(file_source), data_only=True)
+        elif isinstance(file_source, bytes):
+            wb = openpyxl.load_workbook(io.BytesIO(file_source), data_only=True)
+        else:
+            wb = openpyxl.load_workbook(file_source, data_only=True)
+
+        ws = wb.active
+
+        # 1. Detectar Fecha y Folio en encabezados (primeras 6 filas)
+        header_date_str = None
+        header_folio_str = None
+        header_inst_str = default_institucion
+
+        for r in range(1, min(7, ws.max_row + 1)):
+            for c in range(1, min(12, ws.max_column + 1)):
+                val = str(ws.cell(r, c).value or "").strip()
+                if not val:
+                    continue
+                # Fecha
+                m_f = re.search(r'FECHA[:\s]+([0-9]{2,4}[/-][0-9]{1,2}[/-][0-9]{2,4})', val, re.IGNORECASE)
+                if m_f and not header_date_str:
+                    header_date_str = m_f.group(1).strip()
+                # Folio / Vale
+                m_fol = re.search(r'(?:VALE|FOLIO|OFICIO)[:\s]+([A-Za-z0-9\-_/ ]+)', val, re.IGNORECASE)
+                if m_fol and not header_folio_str:
+                    header_folio_str = m_fol.group(1).strip()
+                # Institución
+                m_inst = re.search(r'(?:INSTITUCI[OÓ]N|DESTINO|RECEPTOR)[:\s]+([^\n]+)', val, re.IGNORECASE)
+                if m_inst and header_inst_str == default_institucion:
+                    header_inst_str = m_inst.group(1).strip()
+
+        # Si no se encontró folio en celdas, derivarlo del nombre de archivo (ej. VALE 67.xlsx -> VALE 67)
+        if not header_folio_str:
+            base_fname = filename.rsplit(".", 1)[0]
+            header_folio_str = base_fname.strip()
+
+        # Normalizar fecha cabecera
+        MESES_MAP_ES = {
+            1: "ENERO", 2: "FEBRERO", 3: "MARZO", 4: "ABRIL", 5: "MAYO", 6: "JUNIO",
+            7: "JULIO", 8: "AGOSTO", 9: "SEPTIEMBRE", 10: "OCTUBRE", 11: "NOVIEMBRE", 12: "DICIEMBRE"
+        }
+
+        norm_fecha = None
+        calc_dia = 1
+        calc_mes = default_mes.upper()
+        calc_ano = default_ano
+
+        if header_date_str:
+            try:
+                # Probar formatos comunes
+                for fmt in ("%Y/%m/%d", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
+                    try:
+                        dt = datetime.datetime.strptime(header_date_str, fmt)
+                        norm_fecha = dt.strftime("%Y-%m-%d")
+                        calc_dia = dt.day
+                        calc_mes = MESES_MAP_ES.get(dt.month, default_mes.upper())
+                        calc_ano = dt.year
+                        break
+                    except Exception:
+                        pass
+            except Exception:
+                pass
+
+        if not norm_fecha:
+            norm_fecha = datetime.date.today().strftime("%Y-%m-%d")
+
+        # 2. Localizar fila de encabezados de la tabla (CLAVE, DESCRIPCION, LOTE, CADUCIDAD, CANTIDAD)
+        header_row_idx = None
+        col_map = {}
+        for r in range(1, min(15, ws.max_row + 1)):
+            row_vals = [str(ws.cell(r, c).value or "").strip().upper() for c in range(1, ws.max_column + 1)]
+            if any("CLAVE" in rv for rv in row_vals):
+                header_row_idx = r
+                for c, val in enumerate(row_vals, 1):
+                    if "CLAVE" in val or "CODIGO" in val:
+                        col_map["clave"] = c
+                    elif "DESC" in val:
+                        col_map["descripcion"] = c
+                    elif "LOTE" in val:
+                        col_map["lote"] = c
+                    elif "CADUCID" in val or "VENC" in val or "EXPIR" in val:
+                        col_map["caducidad"] = c
+                    elif "CANT" in val or "PIEZAS" in val or "PZAS" in val or "UNIDADES" in val:
+                        col_map["cantidad"] = c
+                    elif "INST" in val or "DESTINO" in val:
+                        col_map["institucion"] = c
+                    elif "FECHA" in val:
+                        col_map["fecha"] = c
+                break
+
+        if not header_row_idx or "clave" not in col_map:
+            raise ValueError(f"No se encontró la fila de encabezados con la columna 'CLAVE' en '{filename}'.")
+
+        session = self.get_session()
+        records_created = []
+        total_piezas = 0.0
+
+        try:
+            for r in range(header_row_idx + 1, ws.max_row + 1):
+                cve_val = str(ws.cell(r, col_map["clave"]).value or "").strip()
+                if not cve_val or cve_val.lower() in ["total", "totales", "suma", ""]:
+                    continue
+
+                # Lote
+                lote_c = col_map.get("lote")
+                lote_val = str(ws.cell(r, lote_c).value or "").strip() if lote_c else "S/L"
+                if not lote_val:
+                    lote_val = "S/L"
+
+                # Descripción
+                desc_c = col_map.get("descripcion")
+                desc_val = str(ws.cell(r, desc_c).value or "").strip() if desc_c else ""
+                if not desc_val:
+                    cat = session.query(CatalogoInsumoMov).filter_by(clave=cve_val).first()
+                    if cat:
+                        desc_val = cat.descripcion
+                    else:
+                        ins = session.query(InsumoRecord).filter_by(clave=cve_val).first()
+                        if ins:
+                            desc_val = ins.descripcion or ""
+
+                # Caducidad
+                cad_c = col_map.get("caducidad")
+                cad_val = ""
+                if cad_c:
+                    cell_cad = ws.cell(r, cad_c).value
+                    if isinstance(cell_cad, (datetime.datetime, datetime.date)):
+                        cad_val = cell_cad.strftime("%Y-%m-%d")
+                    else:
+                        cad_val = str(cell_cad or "").strip()
+                        if cad_val:
+                            # Normalizar si es fecha reconocida
+                            norm_c = normalize_caducidad(cad_val)
+                            if norm_c and norm_c != "9999-12-31":
+                                cad_val = norm_c
+
+                # Cantidad
+                cant_c = col_map.get("cantidad")
+                cant_val = 0.0
+                if cant_c:
+                    raw_cant = ws.cell(r, cant_c).value
+                    try:
+                        cant_val = float(raw_cant or 0.0)
+                    except Exception:
+                        cant_val = 0.0
+
+                if cant_val <= 0:
+                    continue
+
+                # Fecha fila (si viniera por fila)
+                row_fecha = norm_fecha
+                row_dia = calc_dia
+                row_mes = calc_mes
+                row_ano = calc_ano
+
+                if "fecha" in col_map:
+                    f_cell = ws.cell(r, col_map["fecha"]).value
+                    if isinstance(f_cell, (datetime.datetime, datetime.date)):
+                        row_fecha = f_cell.strftime("%Y-%m-%d")
+                        row_dia = f_cell.day
+                        row_mes = MESES_MAP_ES.get(f_cell.month, calc_mes)
+                        row_ano = f_cell.year
+                    elif f_cell:
+                        s_f = str(f_cell).strip()
+                        for fmt in ("%Y/%m/%d", "%Y-%m-%d", "%d/%m/%Y", "%d-%m-%Y"):
+                            try:
+                                dt = datetime.datetime.strptime(s_f, fmt)
+                                row_fecha = dt.strftime("%Y-%m-%d")
+                                row_dia = dt.day
+                                row_mes = MESES_MAP_ES.get(dt.month, calc_mes)
+                                row_ano = dt.year
+                                break
+                            except Exception:
+                                pass
+
+                # Institución fila
+                row_inst = header_inst_str
+                if "institucion" in col_map:
+                    inst_c = ws.cell(r, col_map["institucion"]).value
+                    if inst_c and str(inst_c).strip():
+                        row_inst = str(inst_c).strip()
+
+                apoyo_obj = ApoyoInstitucionalMov(
+                    clave=cve_val,
+                    lote=lote_val,
+                    caducidad=cad_val,
+                    descripcion=desc_val,
+                    cantidad=cant_val,
+                    institucion=row_inst,
+                    fecha=row_fecha,
+                    dia=row_dia,
+                    mes=row_mes,
+                    ano=row_ano,
+                    folio_documento=header_folio_str,
+                    observaciones=f"Vale importado de {filename}"
+                )
+                session.add(apoyo_obj)
+                records_created.append(apoyo_obj)
+                total_piezas += cant_val
+
+            session.commit()
+            return {
+                "success": True,
+                "filename": filename,
+                "folio": header_folio_str,
+                "fecha": norm_fecha,
+                "mes": calc_mes,
+                "ano": calc_ano,
+                "institucion": header_inst_str,
+                "total_partidas": len(records_created),
+                "total_piezas": round(total_piezas, 2),
+                "items": [it.to_dict() for it in records_created]
+            }
         except Exception as e:
             session.rollback()
             raise e
@@ -3956,30 +4275,61 @@ class DatabaseManager:
             apoyos = session.query(ApoyoInstitucionalMov).filter(ApoyoInstitucionalMov.mes == target_mes, ApoyoInstitucionalMov.ano == target_ano).all()
             for a_item in apoyos:
                 obs = a_item.observaciones or ""
-                if "importad" in obs.lower():
+                # Solo omitir si fue importado como saldo base de OCTUBRE (que ya vino embebido en la hoja de entradas)
+                if target_mes == "OCTUBRE" and "importado base" in obs.lower():
                     continue
 
                 cve_k = a_item.clave.strip()
                 lot_k = a_item.lote.strip()
+                a_cad = (a_item.caducidad or "").strip()
+                a_cad_norm = normalize_caducidad(a_cad) if a_cad else ""
+
                 target_rows = lote_index_map.get((cve_k, lot_k), [])
+                matched_target = None
+
                 if target_rows:
-                    target_rows[0]["apoyo_institucional"] += float(a_item.cantidad or 0.0)
+                    if a_cad_norm and a_cad_norm != "9999-12-31":
+                        for r in target_rows:
+                            r_cad = (r.get("fecha_caducidad") or "").strip()
+                            if r_cad and normalize_caducidad(r_cad) == a_cad_norm:
+                                matched_target = r
+                                break
+
+                    if not matched_target:
+                        if not a_cad_norm or a_cad_norm == "9999-12-31":
+                            matched_target = target_rows[0]
+                        else:
+                            # Si las filas existentes no tienen caducidad definida, asignar a la primera y asignar caducidad
+                            first_cad = (target_rows[0].get("fecha_caducidad") or "").strip()
+                            if not first_cad or normalize_caducidad(first_cad) == "9999-12-31":
+                                matched_target = target_rows[0]
+                                if not target_rows[0].get("fecha_caducidad") and a_cad:
+                                    target_rows[0]["fecha_caducidad"] = a_cad
+                            else:
+                                # Diferente caducidad especificada: tratar como registro nuevo según requerimiento
+                                matched_target = None
+
+                if matched_target:
+                    matched_target["apoyo_institucional"] += float(a_item.cantidad or 0.0)
                     if a_item.fecha:
-                        existing_fa = target_rows[0].get("fecha_apoyo", "")
-                        target_rows[0]["fecha_apoyo"] = f"{existing_fa} {a_item.fecha}".strip() if existing_fa else a_item.fecha
-                        target_rows[0]["observaciones_apoyo"] = target_rows[0]["fecha_apoyo"]
+                        existing_fa = matched_target.get("fecha_apoyo", "")
+                        if not existing_fa:
+                            matched_target["fecha_apoyo"] = a_item.fecha
+                        elif a_item.fecha not in existing_fa:
+                            matched_target["fecha_apoyo"] = f"{existing_fa} {a_item.fecha}".strip()
+                        matched_target["observaciones_apoyo"] = matched_target["fecha_apoyo"]
                 else:
                     cat_item = session.query(CatalogoInsumoMov).filter_by(clave=cve_k).first()
                     orphan = {
                         "id": None,
                         "row_index": 999999,
-                        "orden_suministro": "",
-                        "folio_documento": "",
+                        "orden_suministro": a_item.folio_documento or "",
+                        "folio_documento": a_item.folio_documento or "",
                         "procedimiento": "",
                         "contrato": "",
                         "registro_sanitario": "",
                         "almacen": "CS ALMACEN 2022",
-                        "proveedor": (cat_item.proveedor_predeterminado if cat_item else "") or "Apoyo Inst.",
+                        "proveedor": (cat_item.proveedor_predeterminado if cat_item else "") or a_item.institucion or "Apoyo Inst.",
                         "clave": cve_k,
                         "lote": lot_k,
                         "descripcion": a_item.descripcion or (cat_item.descripcion if cat_item else ""),
@@ -3987,7 +4337,7 @@ class DatabaseManager:
                         "fecha_ajuste": "",
                         "fecha_entrada": "",
                         "fecha_fabricacion": "",
-                        "fecha_caducidad": "",
+                        "fecha_caducidad": a_item.caducidad or "",
                         "inventario_inicial": 0.0,
                         "entrada_por_ajuste": 0.0,
                         "entrada_ajuste": 0.0,
@@ -4631,7 +4981,7 @@ class DatabaseManager:
         )
         apoyo_headers = [
             "FOLIO / OFICIO", "FECHA", "DÍA MES", "INSTITUCIÓN RECEPTORA",
-            "CLAVE", "LOTE", "DESCRIPCIÓN", "CANTIDAD DONADA / ENTREGADA", "OBSERVACIONES"
+            "CLAVE", "LOTE", "CADUCIDAD", "DESCRIPCIÓN", "CANTIDAD DONADA / ENTREGADA", "OBSERVACIONES"
         ]
         ws4.row_dimensions[1].height = 24
         for idx, h in enumerate(apoyo_headers, 1):
@@ -4648,11 +4998,12 @@ class DatabaseManager:
             ws4.cell(r_idx, 4, a.get("institucion", ""))
             ws4.cell(r_idx, 5, a.get("clave", ""))
             ws4.cell(r_idx, 6, a.get("lote", ""))
-            ws4.cell(r_idx, 7, a.get("descripcion", ""))
-            ws4.cell(r_idx, 8, float(a.get("cantidad", 0.0))).number_format = "#,##0"
-            ws4.cell(r_idx, 9, a.get("observaciones", ""))
+            ws4.cell(r_idx, 7, a.get("caducidad", ""))
+            ws4.cell(r_idx, 8, a.get("descripcion", ""))
+            ws4.cell(r_idx, 9, float(a.get("cantidad", 0.0))).number_format = "#,##0"
+            ws4.cell(r_idx, 10, a.get("observaciones", ""))
 
-            for c in range(1, 10):
+            for c in range(1, 11):
                 cell = ws4.cell(r_idx, c)
                 cell.font = data_font
                 cell.border = data_border
@@ -4661,17 +5012,17 @@ class DatabaseManager:
         tot_apo_row = last_apo_row + 1
         ws4.row_dimensions[tot_apo_row].height = 22
         ws4.cell(tot_apo_row, 1, "TOTALES GENERALES").alignment = Alignment(horizontal="center")
-        for col_idx in range(2, 8):
+        for col_idx in range(2, 9):
             ws4.cell(tot_apo_row, col_idx, "").alignment = Alignment(horizontal="center")
-        ws4.cell(tot_apo_row, 8, f"=SUM(H2:H{last_apo_row})").number_format = "#,##0"
-        ws4.cell(tot_apo_row, 9, "").alignment = Alignment(horizontal="center")
-        for c in range(1, 10):
+        ws4.cell(tot_apo_row, 9, f"=SUM(I2:I{last_apo_row})").number_format = "#,##0"
+        ws4.cell(tot_apo_row, 10, "").alignment = Alignment(horizontal="center")
+        for c in range(1, 11):
             cell = ws4.cell(tot_apo_row, c)
             cell.font = Font(name="Aptos Narrow", size=9, bold=True)
             cell.border = data_border
 
-        for col in range(1, 10):
-            ws4.column_dimensions[get_column_letter(col)].width = 18
+        for col in range(1, 11):
+            ws4.column_dimensions[get_column_letter(col)].width = 16 if col in (2, 3, 5, 6, 7, 9) else 24
 
         # ----------------------------------------------------
         # HOJA 5: Catálogos

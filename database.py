@@ -364,6 +364,7 @@ class SalidaPdfMov(Base):
     estado_validacion = Column(String(50), default="VALIDADO") # 'VALIDADO', 'FEFO_OPTIMO', 'AVISO_FEFO', 'ASIGNADO_FEFO'
     aviso_fefo = Column(Text, nullable=True)
     observaciones = Column(Text, nullable=True)
+    proveedor = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     def to_dict(self) -> Dict[str, Any]:
@@ -389,6 +390,7 @@ class SalidaPdfMov(Base):
             "estado_validacion": self.estado_validacion or "VALIDADO",
             "aviso_fefo": self.aviso_fefo or "",
             "observaciones": self.observaciones or "",
+            "proveedor": self.proveedor or "",
             "created_at": self.created_at.strftime("%Y-%m-%d %H:%M:%S") if self.created_at else ""
         }
 
@@ -689,6 +691,10 @@ class DatabaseManager:
                         pass
                 try:
                     conn.exec_driver_sql("ALTER TABLE apoyo_institucional_movimientos ADD COLUMN caducidad VARCHAR(50)")
+                except Exception:
+                    pass
+                try:
+                    conn.exec_driver_sql("ALTER TABLE salidas_pdf_movimientos ADD COLUMN proveedor VARCHAR(200)")
                 except Exception:
                     pass
         except Exception:
@@ -3063,7 +3069,7 @@ class DatabaseManager:
             elif "archivo_fuente" in data and data.get("archivo_fuente") is not None:
                 item.archivo_pdf = str(data["archivo_fuente"]).strip()
 
-            for field in ["descripcion", "cliente_destino", "observaciones"]:
+            for field in ["descripcion", "cliente_destino", "observaciones", "proveedor"]:
                 if field in data and data.get(field) is not None:
                     setattr(item, field, str(data[field]).strip())
 
@@ -3342,6 +3348,8 @@ class DatabaseManager:
                     it_obj.fecha_caducidad = cad_val
                     if desc_val:
                         it_obj.descripcion = desc_val
+                    if "proveedor" in item_data and item_data.get("proveedor") is not None:
+                        it_obj.proveedor = str(item_data.get("proveedor") or "").strip()
                 else:
                     new_salida = SalidaPdfMov(
                         archivo_pdf=nuevo_archivo or "PEDIDO_MANUAL.pdf",
@@ -3355,6 +3363,7 @@ class DatabaseManager:
                         cantidad=cant_val,
                         lote_asignado=lote_val,
                         fecha_caducidad=cad_val,
+                        proveedor=str(item_data.get("proveedor") or "").strip() if item_data.get("proveedor") else None,
                         estado_validacion="VALIDADO"
                     )
                     session.add(new_salida)
@@ -4237,6 +4246,12 @@ class DatabaseManager:
                             r for r in target_rows
                             if r.get("fecha_caducidad") and normalize_caducidad(r.get("fecha_caducidad")) == s_cad_norm
                         ]
+                    # Si no coincidió por fecha exacta de caducidad pero la salida tiene proveedor asignado que coincide:
+                    if not matching_candidates and getattr(s_item, "proveedor", None):
+                        matching_candidates = [
+                            r for r in target_rows
+                            if r.get("proveedor") and r.get("proveedor").strip().upper() == s_item.proveedor.strip().upper()
+                        ]
                     if not matching_candidates:
                         blank_cad = [
                             r for r in target_rows
@@ -4300,7 +4315,7 @@ class DatabaseManager:
                         "contrato": "",
                         "registro_sanitario": "",
                         "almacen": "CS ALMACEN 2022",
-                        "proveedor": (cat_item.proveedor_predeterminado if cat_item else "") or "Remisión PDF",
+                        "proveedor": (getattr(s_item, "proveedor", None) or (cat_item.proveedor_predeterminado if cat_item else "") or "Remisión PDF"),
                         "clave": cve_k,
                         "lote": lot_k or "SIN_LOTE",
                         "descripcion": s_item.descripcion or (cat_item.descripcion if cat_item else ""),

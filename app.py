@@ -157,6 +157,7 @@ class SalidaPdfUpdateRequest(BaseModel):
     estado_validacion: Optional[str] = None
     aviso_fefo: Optional[str] = None
     observaciones: Optional[str] = None
+    proveedor: Optional[str] = None
     recalcular_fefo: Optional[bool] = True
 
 class ApoyoInstitucionalRequest(BaseModel):

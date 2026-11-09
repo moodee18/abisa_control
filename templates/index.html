@@ -4574,7 +4574,7 @@
 
     <!-- Modal: Modificar / Eliminar Pedido Completo -->
     <div class="modal-overlay" id="modalModificarPedidoCompleto">
-        <div class="modal-container" style="max-width: 900px; width: 95vw;">
+        <div class="modal-container" style="max-width: 1080px; width: 96vw;">
             <div class="modal-header">
                 <div>
                     <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
@@ -4663,16 +4663,17 @@
                             <thead style="position: sticky; top: 0; background: var(--bg-hover); z-index: 2;">
                                 <tr>
                                     <th style="padding: 0.5rem; text-align: center; width: 35px;">#</th>
-                                    <th style="padding: 0.5rem; text-align: left; width: 140px;">Clave *</th>
+                                    <th style="padding: 0.5rem; text-align: left; width: 130px;">Clave *</th>
                                     <th style="padding: 0.5rem; text-align: left;">Descripción</th>
-                                    <th style="padding: 0.5rem; text-align: left; width: 120px;">Lote *</th>
-                                    <th style="padding: 0.5rem; text-align: center; width: 110px;">Caducidad</th>
-                                    <th style="padding: 0.5rem; text-align: right; width: 110px;">Cantidad *</th>
+                                    <th style="padding: 0.5rem; text-align: left; width: 110px;">Lote *</th>
+                                    <th style="padding: 0.5rem; text-align: left; width: 170px;">Proveedor</th>
+                                    <th style="padding: 0.5rem; text-align: center; width: 105px;">Caducidad</th>
+                                    <th style="padding: 0.5rem; text-align: right; width: 95px;">Cantidad *</th>
                                     <th style="padding: 0.5rem; text-align: center; width: 40px;"></th>
                                 </tr>
                             </thead>
                             <tbody id="modPedItemsTableBody">
-                                <tr><td colspan="7" class="empty-state" style="padding: 1rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando partidas...</td></tr>
+                                <tr><td colspan="8" class="empty-state" style="padding: 1rem;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando partidas...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -8978,7 +8979,7 @@
             if (!tbody) return;
 
             if (!items || items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state" style="padding: 1rem;"><i class="fa-solid fa-box-open"></i><br>No hay partidas en este pedido. Haga clic en "+ Agregar Partida".</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state" style="padding: 1rem;"><i class="fa-solid fa-box-open"></i><br>No hay partidas en este pedido. Haga clic en "+ Agregar Partida".</td></tr>';
                 updateModificarPedidoTotals();
                 return;
             }
@@ -8986,16 +8987,22 @@
             let html = '';
             items.forEach((it, idx) => {
                 const itemId = it.id || '';
+                const provVal = it.proveedor || _deduceProveedorForClaveLote(it.clave, it.lote_asignado || it.lote);
                 html += `<tr data-item-id="${itemId}" class="mod-ped-item-row">
                     <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${idx + 1}</td>
                     <td>
-                        <input type="text" class="form-control mod-ped-clave" value="${it.clave || ''}" style="font-size: 0.78rem; font-weight: 700; font-family: monospace; padding: 0.3rem 0.5rem;" required>
+                        <input type="text" class="form-control mod-ped-clave" value="${it.clave || ''}" onchange="onModPedClaveChange(this)" oninput="onModPedClaveChange(this)" style="font-size: 0.78rem; font-weight: 700; font-family: monospace; padding: 0.3rem 0.5rem;" required>
                     </td>
                     <td>
                         <input type="text" class="form-control mod-ped-desc" value="${escapeAttr(it.descripcion || '')}" style="font-size: 0.75rem; padding: 0.3rem 0.5rem;" placeholder="Descripción del insumo">
                     </td>
                     <td>
-                        <input type="text" class="form-control mod-ped-lote" value="${it.lote_asignado || it.lote || ''}" style="font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.5rem;" required>
+                        <input type="text" class="form-control mod-ped-lote" value="${it.lote_asignado || it.lote || ''}" onchange="onModPedClaveChange(this)" style="font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.5rem;" required>
+                    </td>
+                    <td>
+                        <select class="form-control mod-ped-prov" style="font-size: 0.74rem; padding: 0.25rem 0.35rem; width: 100%;">
+                            ${_buildProveedorSelectOptions(provVal)}
+                        </select>
                     </td>
                     <td>
                         <input type="text" class="form-control mod-ped-cad" value="${it.fecha_caducidad || it.fecha_caducidad_lote || ''}" style="font-size: 0.78rem; text-align: center; padding: 0.3rem 0.4rem;" placeholder="YYYY-MM-DD">
@@ -9013,6 +9020,33 @@
 
             tbody.innerHTML = html;
             updateModificarPedidoTotals();
+        }
+
+        function onModPedClaveChange(input) {
+            const tr = input.closest('tr');
+            if (!tr) return;
+            const cve = tr.querySelector('.mod-ped-clave')?.value.trim() || '';
+            const lot = tr.querySelector('.mod-ped-lote')?.value.trim() || '';
+            const descEl = tr.querySelector('.mod-ped-desc');
+            const provEl = tr.querySelector('.mod-ped-prov');
+
+            let cat = ctrlCatalogMap[cve.toUpperCase()] || Object.values(ctrlCatalogMap || {}).find(x => (x.clave || '').trim().toUpperCase() === cve.toUpperCase());
+            if (cat && descEl && (!descEl.value || descEl.value.startsWith('Insumo '))) {
+                descEl.value = cat.descripcion || '';
+            }
+            const prov = _deduceProveedorForClaveLote(cve, lot);
+            if (prov && provEl) {
+                let matchOption = Array.from(provEl.options).find(o => o.value.toUpperCase() === prov.toUpperCase());
+                if (matchOption) {
+                    provEl.value = matchOption.value;
+                } else {
+                    const opt = document.createElement('option');
+                    opt.value = prov;
+                    opt.textContent = prov;
+                    opt.selected = true;
+                    provEl.appendChild(opt);
+                }
+            }
         }
 
         function updateModificarPedidoTotals() {
@@ -9054,7 +9088,12 @@
                     <input type="text" class="form-control mod-ped-desc" value="" style="font-size: 0.75rem; padding: 0.3rem 0.5rem;" placeholder="Descripción del insumo">
                 </td>
                 <td>
-                    <input type="text" class="form-control mod-ped-lote" value="" style="font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.5rem;" placeholder="Lote" required>
+                    <input type="text" class="form-control mod-ped-lote" value="" onchange="onModPedClaveChange(this)" style="font-size: 0.78rem; font-weight: 700; padding: 0.3rem 0.5rem;" placeholder="Lote" required>
+                </td>
+                <td>
+                    <select class="form-control mod-ped-prov" style="font-size: 0.74rem; padding: 0.25rem 0.35rem; width: 100%;">
+                        ${_buildProveedorSelectOptions('')}
+                    </select>
                 </td>
                 <td>
                     <input type="text" class="form-control mod-ped-cad" value="" style="font-size: 0.78rem; text-align: center; padding: 0.3rem 0.4rem;" placeholder="YYYY-MM-DD">
@@ -9147,6 +9186,7 @@
                     descripcion: desc,
                     lote_asignado: lote,
                     lote: lote,
+                    proveedor: r.querySelector('.mod-ped-prov')?.value.trim() || '',
                     fecha_caducidad: cad,
                     cantidad: cant
                 });
@@ -10246,6 +10286,124 @@
             }
         }
 
+        function _buildProveedorSelectOptions(selectedProv) {
+            const cur = (selectedProv || '').trim();
+            let options = '<option value="">-- Seleccionar Proveedor --</option>';
+            let found = false;
+
+            const list = (ctrlProveedoresList || []).slice().sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+            list.forEach(p => {
+                const pName = (p.nombre || '').trim();
+                if (!pName) return;
+                const isSel = cur && (pName.toUpperCase() === cur.toUpperCase());
+                if (isSel) found = true;
+                options += `<option value="${_escAttr(pName)}" ${isSel ? 'selected' : ''}>${_escAttr(pName)}</option>`;
+            });
+
+            if (cur && !found) {
+                options += `<option value="${_escAttr(cur)}" selected>${_escAttr(cur)}</option>`;
+            }
+            return options;
+        }
+
+        function _deduceProveedorForClaveLote(clave, lote) {
+            const cve = (clave || '').trim().toUpperCase();
+            const lot = (lote || '').trim().toUpperCase();
+            if (!cve) return '';
+
+            // 1. Buscar coincidencia exacta en entradas por clave + lote
+            if (lot && ctrlModDatasets.entradas) {
+                const matchEnt = ctrlModDatasets.entradas.find(e => 
+                    (e.clave || '').trim().toUpperCase() === cve &&
+                    (e.lote || '').trim().toUpperCase() === lot &&
+                    (e.proveedor || '').trim()
+                );
+                if (matchEnt) return matchEnt.proveedor.trim();
+            }
+
+            // 2. Buscar en catálogo por clave
+            const catItem = ctrlCatalogMap[cve] || Object.values(ctrlCatalogMap || {}).find(x => (x.clave || '').trim().toUpperCase() === cve);
+            if (catItem && (catItem.proveedor_predeterminado || catItem.proveedor_default)) {
+                return (catItem.proveedor_predeterminado || catItem.proveedor_default).trim();
+            }
+
+            // 3. Buscar en cualquier entrada con esa clave
+            if (ctrlModDatasets.entradas) {
+                const entAny = ctrlModDatasets.entradas.find(e => (e.clave || '').trim().toUpperCase() === cve && (e.proveedor || '').trim());
+                if (entAny) return entAny.proveedor.trim();
+            }
+
+            return '';
+        }
+
+        function onCtrlModEntradaClaveChange() {
+            const raw = (document.getElementById('mod_ent_clave')?.value || '').trim();
+            if (!raw) return;
+
+            const cve = raw.toUpperCase();
+            const lot = (document.getElementById('mod_ent_lote')?.value || '').trim();
+
+            let cat = ctrlCatalogMap[cve] || Object.values(ctrlCatalogMap || {}).find(x => (x.clave || '').trim().toUpperCase() === cve);
+            let desc = cat ? (cat.descripcion || '') : '';
+            let udm = cat ? (cat.unidad_medida || cat.udm_default || '') : '';
+            let prov = _deduceProveedorForClaveLote(raw, lot);
+
+            const descEl = document.getElementById('mod_ent_descripcion');
+            if (descEl && desc && (!descEl.value || descEl.value.startsWith('Insumo '))) {
+                descEl.value = desc;
+            }
+
+            const udmEl = document.getElementById('mod_ent_unidad_medida');
+            if (udmEl && udm && (!udmEl.value || udmEl.value === 'PZA')) {
+                udmEl.value = udm;
+            }
+
+            const provSelect = document.getElementById('mod_ent_proveedor');
+            if (provSelect && prov) {
+                let matchOption = Array.from(provSelect.options).find(o => o.value.toUpperCase() === prov.toUpperCase());
+                if (matchOption) {
+                    provSelect.value = matchOption.value;
+                } else {
+                    const opt = document.createElement('option');
+                    opt.value = prov;
+                    opt.textContent = prov;
+                    opt.selected = true;
+                    provSelect.appendChild(opt);
+                }
+            }
+        }
+
+        function onCtrlModSalidaClaveChange() {
+            const raw = (document.getElementById('mod_sal_clave')?.value || '').trim();
+            if (!raw) return;
+
+            const cve = raw.toUpperCase();
+            const lot = (document.getElementById('mod_sal_lote')?.value || '').trim();
+
+            let cat = ctrlCatalogMap[cve] || Object.values(ctrlCatalogMap || {}).find(x => (x.clave || '').trim().toUpperCase() === cve);
+            let desc = cat ? (cat.descripcion || '') : '';
+            let prov = _deduceProveedorForClaveLote(raw, lot);
+
+            const descEl = document.getElementById('mod_sal_descripcion');
+            if (descEl && desc && (!descEl.value || descEl.value.startsWith('Insumo '))) {
+                descEl.value = desc;
+            }
+
+            const provSelect = document.getElementById('mod_sal_proveedor');
+            if (provSelect && prov) {
+                let matchOption = Array.from(provSelect.options).find(o => o.value.toUpperCase() === prov.toUpperCase());
+                if (matchOption) {
+                    provSelect.value = matchOption.value;
+                } else {
+                    const opt = document.createElement('option');
+                    opt.value = prov;
+                    opt.textContent = prov;
+                    opt.selected = true;
+                    provSelect.appendChild(opt);
+                }
+            }
+        }
+
         async function loadCtrlModificarRecords(keepSelection = true) {
             const allPeriods = document.getElementById('ctrlModAllPeriods')?.checked;
             const mes = allPeriods ? 'TODOS' : (document.getElementById('ctrlMonthSelect')?.value || 'OCTUBRE');
@@ -10549,7 +10707,7 @@
                     <div class="ctrl-mod-fields-grid">
                         <div class="ctrl-mod-field">
                             <label>Clave *</label>
-                            <input type="text" id="mod_ent_clave" list="ctrlModDatalistClaves" value="${_escAttr(item.clave)}" required style="font-family:monospace; font-weight:700;">
+                            <input type="text" id="mod_ent_clave" list="ctrlModDatalistClaves" value="${_escAttr(item.clave)}" required style="font-family:monospace; font-weight:700;" oninput="onCtrlModEntradaClaveChange()" onchange="onCtrlModEntradaClaveChange()">
                         </div>
                         <div class="ctrl-mod-field">
                             <label>Lote *</label>
@@ -10596,8 +10754,13 @@
                             <input type="text" id="mod_ent_registro_sanitario" value="${_escAttr(item.registro_sanitario || '')}">
                         </div>
                         <div class="ctrl-mod-field span-full">
-                            <label>Proveedor</label>
-                            <input type="text" id="mod_ent_proveedor" list="ctrlModDatalistProveedores" value="${_escAttr(item.proveedor || '')}">
+                            <label style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><i class="fa-solid fa-truck" style="color:var(--primary);"></i> Proveedor (Lista Desplegable)</span>
+                                <small style="color:var(--text-muted); font-weight:normal;">Selecciona o cambia el proveedor de la partida</small>
+                            </label>
+                            <select id="mod_ent_proveedor" class="form-control" style="font-weight:600; width:100%; padding:0.45rem 0.65rem; border-radius:8px; border:1px solid var(--card-border); background:var(--card-bg); color:var(--text-main);">
+                                ${_buildProveedorSelectOptions(item.proveedor)}
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -10711,11 +10874,11 @@
                     <div class="ctrl-mod-fields-grid">
                         <div class="ctrl-mod-field">
                             <label>Clave *</label>
-                            <input type="text" id="mod_sal_clave" list="ctrlModDatalistClaves" value="${_escAttr(item.clave)}" required style="font-family:monospace; font-weight:700;">
+                            <input type="text" id="mod_sal_clave" list="ctrlModDatalistClaves" value="${_escAttr(item.clave)}" required style="font-family:monospace; font-weight:700;" oninput="onCtrlModSalidaClaveChange()" onchange="onCtrlModSalidaClaveChange()">
                         </div>
                         <div class="ctrl-mod-field">
                             <label>Lote Surtido</label>
-                            <input type="text" id="mod_sal_lote" value="${_escAttr(item.lote_asignado || '')}" style="font-weight:700;">
+                            <input type="text" id="mod_sal_lote" value="${_escAttr(item.lote_asignado || '')}" style="font-weight:700;" onchange="onCtrlModSalidaClaveChange()">
                         </div>
                         <div class="ctrl-mod-field">
                             <label>Cantidad Surtida *</label>
@@ -10724,6 +10887,15 @@
                         <div class="ctrl-mod-field">
                             <label>Fecha de Caducidad del Lote</label>
                             <input type="text" id="mod_sal_caducidad" placeholder="YYYY-MM-DD" value="${_escAttr(item.fecha_caducidad || '')}">
+                        </div>
+                        <div class="ctrl-mod-field span-full">
+                            <label style="display:flex; justify-content:space-between; align-items:center;">
+                                <span><i class="fa-solid fa-truck" style="color:var(--primary);"></i> Proveedor Asignado (Lista Desplegable)</span>
+                                <small style="color:var(--text-muted); font-weight:normal;">Ajuste rápido: selecciona el proveedor para asociar la salida al inventario correcto</small>
+                            </label>
+                            <select id="mod_sal_proveedor" class="form-control" style="font-weight:600; width:100%; padding:0.45rem 0.65rem; border-radius:8px; border:1px solid var(--card-border); background:var(--card-bg); color:var(--text-main);">
+                                ${_buildProveedorSelectOptions(item.proveedor || _deduceProveedorForClaveLote(item.clave, item.lote_asignado))}
+                            </select>
                         </div>
                         <div class="ctrl-mod-field span-full">
                             <label>Descripción</label>
@@ -11051,6 +11223,7 @@
                     cantidad: parseFloat(document.getElementById('mod_sal_cantidad')?.value || '0') || 0,
                     fecha_caducidad: document.getElementById('mod_sal_caducidad')?.value.trim() || '',
                     descripcion: document.getElementById('mod_sal_descripcion')?.value.trim() || '',
+                    proveedor: document.getElementById('mod_sal_proveedor')?.value.trim() || '',
                     fecha: document.getElementById('mod_sal_fecha')?.value.trim() || '',
                     dia: parseInt(document.getElementById('mod_sal_dia')?.value || '1', 10) || 1,
                     mes: document.getElementById('mod_sal_mes')?.value || 'OCTUBRE',

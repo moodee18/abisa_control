@@ -5,16 +5,22 @@ echo   Iniciando Panel de Inventario SIIA Abisalud...
 echo ===================================================
 echo.
 
-:: Asegurar que librerias binarias no esten bloqueadas por Windows
-powershell -NoProfile -Command "Get-ChildItem -Path '%~dp0.venv' -Recurse -Include *.pyd,*.dll -ErrorAction SilentlyContinue | Unblock-File" >nul 2>&1
+set "PYTHON_EXE=python"
+if exist "%~dp0.venv\Scripts\python.exe" (
+    set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
+    powershell -NoProfile -Command "Get-ChildItem -Path '%~dp0.venv' -Recurse -Include *.pyd,*.dll -ErrorAction SilentlyContinue | Unblock-File" >nul 2>&1
+) else if exist "%~dp0venv\Scripts\python.exe" (
+    set "PYTHON_EXE=%~dp0venv\Scripts\python.exe"
+)
 
-"%~dp0.venv\Scripts\python.exe" "%~dp0main.py" --web
+"%PYTHON_EXE%" "%~dp0main.py" --web
 if %errorlevel% neq 0 (
     echo.
     echo ===================================================
-    echo  AVISO: Si aparece un error de "Control de aplicaciones",
-    echo  abra "Seguridad de Windows" ^> "Control de aplicaciones y navegador"
-    echo  ^> "Control inteligente de aplicaciones" y pongalo en Desactivado.
+    echo  AVISO: Si faltan dependencias en este equipo, ejecute:
+    echo    python -m venv .venv
+    echo    .venv\Scripts\pip install -r requirements.txt
+    echo    .venv\Scripts\playwright install chromium
     echo ===================================================
 )
 pause

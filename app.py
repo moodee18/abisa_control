@@ -2423,6 +2423,110 @@ async def generate_marbetes_pdf(
         raise HTTPException(status_code=500, detail=f"Error generando PDF: {str(e)}")
 
 
+# =============================================================================
+# ENDPOINTS DE AUTOMATIZACIÓN ROBÓTICA SIIA (ALTAS Y SEGUIMIENTO)
+# =============================================================================
+import time
+from siia_inventario_rpa import siia_rpa_manager
+
+@app.post("/api/siia-rpa/alta")
+async def siia_rpa_alta(
+    file: UploadFile = File(...),
+    localidad_id: str = Form("1836"),
+    descargar_pdfs: bool = Form(True),
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+):
+    """Ejecuta en segundo plano el alta masiva de inventario para almacenes especificados en un Excel."""
+    state = siia_rpa_manager.get_state()
+    if state.get("running"):
+        return {"status": "busy", "message": f"Ya hay una tarea de RPA en curso ({state.get('type')}). Espera a que termine o cancela el proceso activo."}
+
+    temp_dir = Path("data/uploads_rpa")
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    file_path = temp_dir / f"alta_almacenes_{int(time.time())}.xlsx"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    threading.Thread(
+        target=siia_rpa_manager.ejecutar_alta_masiva,
+        args=(str(file_path), localidad_id, descargar_pdfs),
+        daemon=True
+    ).start()
+
+    return {"status": "started", "message": "Proceso de Alta de Inventario iniciado en segundo plano.", "type": "alta"}
+
+@app.post("/api/siia-rpa/seguimiento")
+async def siia_rpa_seguimiento(
+    file: UploadFile = File(...),
+    localidad_id: str = Form("1836"),
+    auto_finalizar: bool = Form(True),
+    guardar_evidencias: bool = Form(True),
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+):
+    """Ejecuta en segundo plano el seguimiento masivo de inventario (hoja por hoja, finalizado y evidencias)."""
+    state = siia_rpa_manager.get_state()
+    if state.get("running"):
+        return {"status": "busy", "message": f"Ya hay una tarea de RPA en curso ({state.get('type')}). Espera a que termine o cancela el proceso activo."}
+
+    temp_dir = Path("data/uploads_rpa")
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    file_path = temp_dir / f"seguimiento_inv_{int(time.time())}.xlsx"
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    threading.Thread(
+        target=siia_rpa_manager.ejecutar_seguimiento_masivo,
+        args=(str(file_path), localidad_id, auto_finalizar, guardar_evidencias),
+        daemon=True
+    ).start()
+
+    return {"status": "started", "message": "Proceso de Seguimiento de Inventario iniciado en segundo plano.", "type": "seguimiento"}
+
+@app.get("/api/siia-rpa/status")
+async def siia_rpa_status(
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+):
+    """Consulta el estado en tiempo real del motor RPA de inventarios."""
+    return siia_rpa_manager.get_state()
+
+@app.post("/api/siia-rpa/cancel")
+async def siia_rpa_cancel(
+    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+):
+    """Detiene y cancela la operación de RPA en curso."""
+    siia_rpa_manager.cancel()
+    return {"status": "cancelling", "message": "Se ha solicitado la detención del proceso RPA."}
+
+@app.get("/api/siia-rpa/download/altas-zip")
+async def siia_rpa_download_altas_zip():
+    path = Path("downloads/Altas_Inventario_SIIA.zip")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="No se encontró el archivo ZIP de altas de inventario.")
+    return FileResponse(str(path), filename="Altas_Inventario_SIIA.zip", media_type="application/zip")
+
+@app.get("/api/siia-rpa/download/evidencias-zip")
+async def siia_rpa_download_evidencias_zip():
+    path = Path("downloads/Evidencias_Seguimiento_Inventarios.zip")
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="No se encontró el archivo ZIP de evidencias de seguimiento.")
+    return FileResponse(str(path), filename="Evidencias_Seguimiento_Inventarios.zip", media_type="application/zip")
+
+@app.get("/api/siia-rpa/template/{tipo}")
+async def siia_rpa_download_template(tipo: str):
+    if tipo == "alta":
+        path = Path("data/plantillas/Plantilla_Alta_Almacenes.xlsx")
+        fn = "Plantilla_Alta_Almacenes.xlsx"
+    elif tipo == "seguimiento":
+        path = Path("data/plantillas/Plantilla_Seguimiento_Inventario.xlsx")
+        fn = "Plantilla_Seguimiento_Inventario.xlsx"
+    else:
+        raise HTTPException(status_code=400, detail="Tipo de plantilla no válido. Usa 'alta' o 'seguimiento'.")
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="La plantilla solicitada no existe.")
+    return FileResponse(str(path), filename=fn, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+
 if __name__ == "__main__":
     import uvicorn
     print(f"\n[SERVIDOR] Iniciando Dashboard SIIA Abisalud en http://localhost:{config.APP_PORT} ...")

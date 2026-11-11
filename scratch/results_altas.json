@@ -1,0 +1,1102 @@
+[
+  {
+    "num": 1,
+    "id": "5811",
+    "nombre": "ABASTECEDORA DE INSUMOS PARA LA SALUD S.A. DE C.V.",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 2,
+    "id": "6643",
+    "nombre": "ADMINISTRADORA DE MARCAS FARMACEUTICAS",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 3,
+    "id": "6621",
+    "nombre": "ADVANTA PHARMA SAPI DE CV",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 4,
+    "id": "13074",
+    "nombre": "AGYPROM",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 5,
+    "id": "3876",
+    "nombre": "AGYPROM SA DE CV UNOPS 2021",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 6,
+    "id": "6616",
+    "nombre": "AMBIDERM SA DE CV",
+    "estado": "Ajuste Pendiente",
+    "alerta": "No se puede dar de alta el ajuste en este Almacen debido a que se encuentra un Ajuste Pendiente para este Almacen",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 7,
+    "id": "13046",
+    "nombre": "AMC BIOMEDICAL",
+    "estado": "Procesado / Generado",
+    "alerta": "",
+    "popups": [],
+    "descargas": []
+  },
+  {
+    "num": 8,
+    "id": "11557",
+    "nombre": "ANSOF COMERCIALIZADORES SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\doc.pdf",
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 9,
+    "id": "13047",
+    "nombre": "ARGOSOL",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx"
+    ]
+  },
+  {
+    "num": 10,
+    "id": "3885",
+    "nombre": "ARROW INTERNACIONAL DE MEXICO S.A. DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\doc.pdf",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 11,
+    "id": "11842",
+    "nombre": "ARTE MANUFACTURA Y COMERCIO SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 12,
+    "id": "3835",
+    "nombre": "ARVIEN S.A. DE C.V.- CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 13,
+    "id": "3847",
+    "nombre": "ARVIEN S.A. DE C.V.- PROV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 14,
+    "id": "3910",
+    "nombre": "ASOKAM S.A. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 15,
+    "id": "10882",
+    "nombre": "ATYDE MEXICO SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 16,
+    "id": "11514",
+    "nombre": "AZTEC MEDIC S.A DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 17,
+    "id": "5762",
+    "nombre": "B BRAUN DE MEXICO SAPI DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 18,
+    "id": "3838",
+    "nombre": "BECTON DICKINSON DE MEXICO S.A DE C.V- CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 19,
+    "id": "11927",
+    "nombre": "BECTON DICKINSON DE MEXICO S.A. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx"
+    ]
+  },
+  {
+    "num": 20,
+    "id": "3882",
+    "nombre": "BOSTON MEDICALDEVICE DE MEXICO S DE R.L. DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\doc.pdf",
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 21,
+    "id": "3904",
+    "nombre": "BOSTON SCIENTIFIC DE MEXICO S.A DE R.L.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 22,
+    "id": "13026",
+    "nombre": "BOSTON SCIENTIFIC DE MEXICO SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 23,
+    "id": "3884",
+    "nombre": "BSN MEDICAL DC SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 24,
+    "id": "3899",
+    "nombre": "CARDINAL HEALTH MEXICO 514 S DE RL DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 25,
+    "id": "7499",
+    "nombre": "CASA PLARRE SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 26,
+    "id": "7101",
+    "nombre": "CHARDANY COMPANY",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 27,
+    "id": "6607",
+    "nombre": "CHC Y ASOCIADOS COMERCIALIZADORA SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 28,
+    "id": "13027",
+    "nombre": "CIRCUITO INTENSIVOS MEDICOS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 29,
+    "id": "6644",
+    "nombre": "CLINILABS DISTRIBUCIONES CIENTIFICAS SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 30,
+    "id": "5146",
+    "nombre": "COMERCIAL OFIMED S.A. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 31,
+    "id": "13073",
+    "nombre": "COMERCIALIZADORA ARVIEN S.A DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 32,
+    "id": "6798",
+    "nombre": "COMERCIALIZADORA DE INSUMOS PARA LA SALUD SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 33,
+    "id": "11827",
+    "nombre": "COMERCIALIZADORA DE PRODUCTOS BASICOS PARA LA SALUD S DE R.L DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 34,
+    "id": "9707",
+    "nombre": "CONSORCIO MEDICO MIUS S DE R.L. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 35,
+    "id": "3909",
+    "nombre": "CONSUMIBLES PARA LA SALUD S.A DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx"
+    ]
+  },
+  {
+    "num": 36,
+    "id": "3926",
+    "nombre": "CONTROLADORA MEDIKA S.A DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\doc.pdf",
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 37,
+    "id": "11644",
+    "nombre": "CORDIS MEDICAL MEXICO S DE R.L. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 38,
+    "id": "9721",
+    "nombre": "CORPORACION ARMO SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 39,
+    "id": "3823",
+    "nombre": "DEGASA SA DE C.V CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 40,
+    "id": "9711",
+    "nombre": "DENTILAB SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 41,
+    "id": "11864",
+    "nombre": "DETECCION Y DIAGNOSTICO ESPECIALIZADO EN SALUD",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 42,
+    "id": "13032",
+    "nombre": "DISPOSITIVOS IMPLANTABLES DE MEXICO SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 43,
+    "id": "3745",
+    "nombre": "DJM-DON",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 44,
+    "id": "8336",
+    "nombre": "DL MEDICA SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 45,
+    "id": "3887",
+    "nombre": "DL MEDICAL S.A. DE C.V UNOPS 2021",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 46,
+    "id": "3836",
+    "nombre": "DL MEDICAL S.A. DE C.V.-CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 47,
+    "id": "3743",
+    "nombre": "DONACION",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 48,
+    "id": "11457",
+    "nombre": "DURFA S.A DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 49,
+    "id": "3752",
+    "nombre": "ECO DISTRIBUIDORA MEDICA S A DE C V CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 50,
+    "id": "3833",
+    "nombre": "EDIGAR QUIRURGICA",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 51,
+    "id": "10776",
+    "nombre": "ENDOMEDICA SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 52,
+    "id": "11567",
+    "nombre": "ENDOPP MEDICAL SA DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx"
+    ]
+  },
+  {
+    "num": 53,
+    "id": "5763",
+    "nombre": "EQUIPOS MEDICOS DEL SUR",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\doc.pdf",
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 54,
+    "id": "3862",
+    "nombre": "EQUIPOS MEDICOS QUIRURGICOS S.A. DE C.V.-DON",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 55,
+    "id": "3922",
+    "nombre": "EQUIPOS MEDICOS VIZCARRA S.A.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 56,
+    "id": "3871",
+    "nombre": "ESIGAR QUIRURGICA S.A DE C.V. CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 57,
+    "id": "3880",
+    "nombre": "ESIGAR QUIRURGICA SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 58,
+    "id": "3907",
+    "nombre": "ESPECIALISTAS EN APLICACIONES Y SOPORTE TECNICO MEDICO S.A DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 59,
+    "id": "3890",
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 60,
+    "id": "5527",
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V. UNOPS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 61,
+    "id": "3841",
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V.-CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 62,
+    "id": "13070",
+    "nombre": "ESTERI-MEX SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 63,
+    "id": "11642",
+    "nombre": "FARMACEUTICA MEDIKAMENTA SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 64,
+    "id": "7681",
+    "nombre": "FARMALIC SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 65,
+    "id": "12934",
+    "nombre": "FRESENIUS KABI MEXICO S.A DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 66,
+    "id": "3870",
+    "nombre": "FRESENIUS KABI MEXICO S.A DE C.V CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 67,
+    "id": "11525",
+    "nombre": "GALA PHARMA SA DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 68,
+    "id": "3826",
+    "nombre": "GALIA TEXTIL S.A. DE C.V.-CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 69,
+    "id": "5164",
+    "nombre": "GARKEN MEDICAL S.A. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 70,
+    "id": "9647",
+    "nombre": "GLOBAL BUSINESS GROUP SA. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 71,
+    "id": "13060",
+    "nombre": "GRUNENTHAL DE MEXICO SA DE CV",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 72,
+    "id": "3822",
+    "nombre": "GRUNENTHAL DE MEXICO SA DE CV CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 73,
+    "id": "5796",
+    "nombre": "GRUPO COMERCIAL JEMA S.A. DE C.V.",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 74,
+    "id": "11496",
+    "nombre": "GRUPO INDUSTRIAL POSEIDON S.A DE C.V",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 75,
+    "id": "3827",
+    "nombre": "GRUPO INDUSTRIAL POSEIDON S.A. DE C.V.-CONS",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  },
+  {
+    "num": 76,
+    "id": "3886",
+    "nombre": "GRUPO INDUSTRIAL POSEIDON SA DE CV UNOPS 2021",
+    "estado": "Generado con éxito",
+    "alerta": "",
+    "popups": [
+      "",
+      ""
+    ],
+    "descargas": [
+      "downloads\\altas_inventario\\Inventario Periodico.xlsx",
+      "downloads\\altas_inventario\\doc.pdf"
+    ]
+  }
+]

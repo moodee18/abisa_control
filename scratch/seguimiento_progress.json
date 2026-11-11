@@ -1,0 +1,752 @@
+{
+  "ADVANTA PHARMA SAPI DE CV": {
+    "num": 1,
+    "status": "FINALIZADO",
+    "almacen_id": "302823",
+    "total_excel": 16,
+    "total_matched": 16,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\01_ADVANTA_PHARMA_SAPI_DE_CV.png",
+    "completed_at": "2026-11-11 14:30:45"
+  },
+  "AGYPROM": {
+    "num": 2,
+    "status": "FINALIZADO",
+    "almacen_id": "302824",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\02_AGYPROM.png",
+    "completed_at": "2026-11-11 14:30:57"
+  },
+  "AGYPROM SA DE CV UNOPS 2021": {
+    "num": 3,
+    "status": "FINALIZADO",
+    "almacen_id": "302828",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\03_AGYPROM_SA_DE_CV_UNOPS_2021.png",
+    "completed_at": "2026-11-11 14:31:10"
+  },
+  "AMBIDERM SA DE CV": {
+    "num": 4,
+    "status": "FINALIZADO",
+    "almacen_id": "302831",
+    "total_excel": 33,
+    "total_matched": 33,
+    "total_pages": 2,
+    "proof_img": "scratch/proofs_inventarios\\04_AMBIDERM_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:31:28"
+  },
+  "AMC BIOMEDICAL": {
+    "num": 5,
+    "status": "FINALIZADO",
+    "almacen_id": "302832",
+    "total_excel": 5,
+    "total_matched": 5,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\05_AMC_BIOMEDICAL.png",
+    "completed_at": "2026-11-11 14:31:41"
+  },
+  "ANSOF COMERCIALIZADORES SA. DE C.V.": {
+    "num": 6,
+    "status": "FINALIZADO",
+    "almacen_id": "302834",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\06_ANSOF_COMERCIALIZADORES_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:31:53"
+  },
+  "ARGOSOL": {
+    "num": 7,
+    "status": "FINALIZADO",
+    "almacen_id": "302835",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\07_ARGOSOL.png",
+    "completed_at": "2026-11-11 14:32:05"
+  },
+  "ARROW INTERNACIONAL DE MEXICO S.A. DE C.V": {
+    "num": 8,
+    "status": "FINALIZADO",
+    "almacen_id": "302836",
+    "total_excel": 46,
+    "total_matched": 46,
+    "total_pages": 3,
+    "proof_img": "scratch/proofs_inventarios\\08_ARROW_INTERNACIONAL_DE_MEXICO_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:32:30"
+  },
+  "ARTE MANUFACTURA Y COMERCIO SA DE CV": {
+    "num": 9,
+    "status": "FINALIZADO",
+    "almacen_id": "302837",
+    "total_excel": 6,
+    "total_matched": 6,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\09_ARTE_MANUFACTURA_Y_COMERCIO_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:32:42"
+  },
+  "ARVIEN S.A. DE C.V.- CONS": {
+    "num": 10,
+    "status": "FINALIZADO",
+    "almacen_id": "302838",
+    "total_excel": 5,
+    "total_matched": 5,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\10_ARVIEN_S_A__DE_C_V_-_CONS.png",
+    "completed_at": "2026-11-11 14:32:55"
+  },
+  "ARVIEN S.A. DE C.V.- PROV": {
+    "num": 11,
+    "status": "FINALIZADO",
+    "almacen_id": "302840",
+    "total_excel": 5,
+    "total_matched": 5,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\11_ARVIEN_S_A__DE_C_V_-_PROV.png",
+    "completed_at": "2026-11-11 14:33:07"
+  },
+  "ASOKAM S.A. DE C.V.": {
+    "num": 12,
+    "status": "FINALIZADO",
+    "almacen_id": "302841",
+    "total_excel": 4,
+    "total_matched": 4,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\12_ASOKAM_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:33:19"
+  },
+  "ATYDE MEXICO SA. DE C.V.": {
+    "num": 13,
+    "status": "FINALIZADO",
+    "almacen_id": "302842",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\13_ATYDE_MEXICO_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:33:32"
+  },
+  "AZTEC MEDIC S.A DE C.V": {
+    "num": 14,
+    "status": "FINALIZADO",
+    "almacen_id": "302843",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\14_AZTEC_MEDIC_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:33:44"
+  },
+  "B BRAUN DE MEXICO SAPI DE CV": {
+    "num": 15,
+    "status": "FINALIZADO",
+    "almacen_id": "302844",
+    "total_excel": 6,
+    "total_matched": 6,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\15_B_BRAUN_DE_MEXICO_SAPI_DE_CV.png",
+    "completed_at": "2026-11-11 14:33:57"
+  },
+  "BECTON DICKINSON DE MEXICO S.A DE C.V- CONS": {
+    "num": 16,
+    "status": "FINALIZADO",
+    "almacen_id": "302845",
+    "total_excel": 13,
+    "total_matched": 13,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\16_BECTON_DICKINSON_DE_MEXICO_S_A_DE_C_V-_CONS.png",
+    "completed_at": "2026-11-11 14:34:09"
+  },
+  "BECTON DICKINSON DE MEXICO S.A. DE C.V.": {
+    "num": 17,
+    "status": "FINALIZADO",
+    "almacen_id": "302846",
+    "total_excel": 28,
+    "total_matched": 28,
+    "total_pages": 2,
+    "proof_img": "scratch/proofs_inventarios\\17_BECTON_DICKINSON_DE_MEXICO_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:34:28"
+  },
+  "BOSTON MEDICALDEVICE DE MEXICO S DE R.L. DE C.V": {
+    "num": 18,
+    "status": "FINALIZADO",
+    "almacen_id": "302847",
+    "total_excel": 14,
+    "total_matched": 14,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\18_BOSTON_MEDICALDEVICE_DE_MEXICO_S_DE_R_L__DE_C_V.png",
+    "completed_at": "2026-11-11 14:34:40"
+  },
+  "BOSTON SCIENTIFIC DE MEXICO S.A DE R.L.": {
+    "num": 19,
+    "status": "FINALIZADO",
+    "almacen_id": "302848",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\19_BOSTON_SCIENTIFIC_DE_MEXICO_S_A_DE_R_L.png",
+    "completed_at": "2026-11-11 14:34:53"
+  },
+  "BOSTON SCIENTIFIC DE MEXICO SA DE CV": {
+    "num": 20,
+    "status": "FINALIZADO",
+    "almacen_id": "302849",
+    "total_excel": 10,
+    "total_matched": 10,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\20_BOSTON_SCIENTIFIC_DE_MEXICO_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:35:05"
+  },
+  "BSN MEDICAL DC SA DE CV": {
+    "num": 21,
+    "status": "FINALIZADO",
+    "almacen_id": "302850",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\21_BSN_MEDICAL_DC_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:35:17"
+  },
+  "CARDINAL HEALTH MEXICO 514 S DE RL DE C.V.": {
+    "num": 22,
+    "status": "FINALIZADO",
+    "almacen_id": "302851",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\22_CARDINAL_HEALTH_MEXICO_514_S_DE_RL_DE_C_V.png",
+    "completed_at": "2026-11-11 14:35:30"
+  },
+  "CASA PLARRE SA. DE C.V.": {
+    "num": 23,
+    "status": "FINALIZADO",
+    "almacen_id": "302852",
+    "total_excel": 5,
+    "total_matched": 5,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\23_CASA_PLARRE_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:35:42"
+  },
+  "CHARDANY COMPANY": {
+    "num": 24,
+    "status": "FINALIZADO",
+    "almacen_id": "302854",
+    "total_excel": 9,
+    "total_matched": 9,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\24_CHARDANY_COMPANY.png",
+    "completed_at": "2026-11-11 14:35:55"
+  },
+  "CHC Y ASOCIADOS COMERCIALIZADORA SA DE CV": {
+    "num": 25,
+    "status": "FINALIZADO",
+    "almacen_id": "302855",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\25_CHC_Y_ASOCIADOS_COMERCIALIZADORA_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:36:07"
+  },
+  "CIRCUITO INTENSIVOS MEDICOS": {
+    "num": 26,
+    "status": "FINALIZADO",
+    "almacen_id": "302856",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\26_CIRCUITO_INTENSIVOS_MEDICOS.png",
+    "completed_at": "2026-11-11 14:36:19"
+  },
+  "CLINILABS DISTRIBUCIONES CIENTIFICAS SA DE CV": {
+    "num": 27,
+    "status": "FINALIZADO",
+    "almacen_id": "302857",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\27_CLINILABS_DISTRIBUCIONES_CIENTIFICAS_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:36:32"
+  },
+  "COMERCIAL OFIMED S.A. DE C.V.": {
+    "num": 28,
+    "status": "FINALIZADO",
+    "almacen_id": "302858",
+    "total_excel": 8,
+    "total_matched": 8,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\28_COMERCIAL_OFIMED_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:36:44"
+  },
+  "COMERCIALIZADORA ARVIEN S.A DE C.V": {
+    "num": 29,
+    "status": "FINALIZADO",
+    "almacen_id": "302860",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\29_COMERCIALIZADORA_ARVIEN_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:36:56"
+  },
+  "COMERCIALIZADORA DE INSUMOS PARA LA SALUD SA DE CV": {
+    "num": 30,
+    "status": "FINALIZADO",
+    "almacen_id": "302861",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\30_COMERCIALIZADORA_DE_INSUMOS_PARA_LA_SALUD_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:37:09"
+  },
+  "COMERCIALIZADORA DE PRODUCTOS BASICOS PARA LA SALUD S DE R.L DE C.V": {
+    "num": 31,
+    "status": "FINALIZADO",
+    "almacen_id": "302862",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\31_COMERCIALIZADORA_DE_PRODUCTOS_BASICOS_PARA_LA_SALUD_S_DE_R_L_DE_C_V.png",
+    "completed_at": "2026-11-11 14:37:21"
+  },
+  "CONSORCIO MEDICO MIUS S DE R.L. DE C.V.": {
+    "num": 32,
+    "status": "FINALIZADO",
+    "almacen_id": "302863",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\32_CONSORCIO_MEDICO_MIUS_S_DE_R_L__DE_C_V.png",
+    "completed_at": "2026-11-11 14:37:34"
+  },
+  "CONSUMIBLES PARA LA SALUD S.A DE C.V.": {
+    "num": 33,
+    "status": "FINALIZADO",
+    "almacen_id": "302865",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\33_CONSUMIBLES_PARA_LA_SALUD_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:37:46"
+  },
+  "CONTROLADORA MEDIKA S.A DE C.V.": {
+    "num": 34,
+    "status": "FINALIZADO",
+    "almacen_id": "302866",
+    "total_excel": 8,
+    "total_matched": 8,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\34_CONTROLADORA_MEDIKA_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:37:58"
+  },
+  "CORDIS MEDICAL MEXICO S DE R.L. DE C.V.": {
+    "num": 35,
+    "status": "FINALIZADO",
+    "almacen_id": "302867",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\35_CORDIS_MEDICAL_MEXICO_S_DE_R_L__DE_C_V.png",
+    "completed_at": "2026-11-11 14:38:11"
+  },
+  "CORPORACION ARMO SA. DE C.V.": {
+    "num": 36,
+    "status": "FINALIZADO",
+    "almacen_id": "302868",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\36_CORPORACION_ARMO_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:38:23"
+  },
+  "DEGASA SA DE C.V CONS": {
+    "num": 37,
+    "status": "FINALIZADO",
+    "almacen_id": "302869",
+    "total_excel": 147,
+    "total_matched": 147,
+    "total_pages": 9,
+    "proof_img": "scratch/proofs_inventarios\\37_DEGASA_SA_DE_C_V_CONS.png",
+    "completed_at": "2026-11-11 14:39:22"
+  },
+  "DENTILAB SA. DE C.V.": {
+    "num": 38,
+    "status": "FINALIZADO",
+    "almacen_id": "302870",
+    "total_excel": 5,
+    "total_matched": 5,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\38_DENTILAB_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:39:35"
+  },
+  "DETECCION Y DIAGNOSTICO ESPECIALIZADO EN SALUD": {
+    "num": 39,
+    "status": "FINALIZADO",
+    "almacen_id": "302872",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\39_DETECCION_Y_DIAGNOSTICO_ESPECIALIZADO_EN_SALUD.png",
+    "completed_at": "2026-11-11 14:39:47"
+  },
+  "DISPOSITIVOS IMPLANTABLES DE MEXICO SA. DE C.V.": {
+    "num": 40,
+    "status": "FINALIZADO",
+    "almacen_id": "302873",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\40_DISPOSITIVOS_IMPLANTABLES_DE_MEXICO_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:40:00"
+  },
+  "DJM-DON": {
+    "num": 41,
+    "status": "FINALIZADO",
+    "almacen_id": "302874",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\41_DJM-DON.png",
+    "completed_at": "2026-11-11 14:40:12"
+  },
+  "DL MEDICA SA. DE C.V.": {
+    "num": 42,
+    "status": "FINALIZADO",
+    "almacen_id": "302875",
+    "total_excel": 83,
+    "total_matched": 83,
+    "total_pages": 5,
+    "proof_img": "scratch/proofs_inventarios\\42_DL_MEDICA_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:40:48"
+  },
+  "DL MEDICAL S.A. DE C.V UNOPS 2021": {
+    "num": 43,
+    "status": "FINALIZADO",
+    "almacen_id": "302876",
+    "total_excel": 4,
+    "total_matched": 4,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\43_DL_MEDICAL_S_A__DE_C_V_UNOPS_2021.png",
+    "completed_at": "2026-11-11 14:41:00"
+  },
+  "DL MEDICAL S.A. DE C.V.-CONS": {
+    "num": 44,
+    "status": "FINALIZADO",
+    "almacen_id": "302878",
+    "total_excel": 10,
+    "total_matched": 10,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\44_DL_MEDICAL_S_A__DE_C_V_-CONS.png",
+    "completed_at": "2026-11-11 14:41:13"
+  },
+  "DONACION": {
+    "num": 45,
+    "status": "FINALIZADO",
+    "almacen_id": "302879",
+    "total_excel": 10,
+    "total_matched": 10,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\45_DONACION.png",
+    "completed_at": "2026-11-11 14:41:25"
+  },
+  "DURFA S.A DE C.V": {
+    "num": 46,
+    "status": "FINALIZADO",
+    "almacen_id": "302880",
+    "total_excel": 4,
+    "total_matched": 4,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\46_DURFA_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:41:38"
+  },
+  "ECO DISTRIBUIDORA MEDICA S A DE C V CONS": {
+    "num": 47,
+    "status": "FINALIZADO",
+    "almacen_id": "302881",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\47_ECO_DISTRIBUIDORA_MEDICA_S_A_DE_C_V_CONS.png",
+    "completed_at": "2026-11-11 14:41:50"
+  },
+  "EDIGAR QUIRURGICA": {
+    "num": 48,
+    "status": "FINALIZADO",
+    "almacen_id": "302882",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\48_EDIGAR_QUIRURGICA.png",
+    "completed_at": "2026-11-11 14:42:02"
+  },
+  "ENDOMEDICA SA. DE C.V.": {
+    "num": 49,
+    "status": "FINALIZADO",
+    "almacen_id": "302884",
+    "total_excel": 21,
+    "total_matched": 21,
+    "total_pages": 2,
+    "proof_img": "scratch/proofs_inventarios\\49_ENDOMEDICA_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:42:21"
+  },
+  "ENDOPP MEDICAL SA DE C.V.": {
+    "num": 50,
+    "status": "FINALIZADO",
+    "almacen_id": "302885",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\50_ENDOPP_MEDICAL_SA_DE_C_V.png",
+    "completed_at": "2026-11-11 14:42:33"
+  },
+  "EQUIPOS MEDICOS DEL SUR": {
+    "num": 51,
+    "status": "FINALIZADO",
+    "almacen_id": "302886",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\51_EQUIPOS_MEDICOS_DEL_SUR.png",
+    "completed_at": "2026-11-11 14:42:45"
+  },
+  "EQUIPOS MEDICOS QUIRURGICOS S.A. DE C.V.-DON": {
+    "num": 52,
+    "status": "FINALIZADO",
+    "almacen_id": "302887",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\52_EQUIPOS_MEDICOS_QUIRURGICOS_S_A__DE_C_V_-DON.png",
+    "completed_at": "2026-11-11 14:42:58"
+  },
+  "EQUIPOS MEDICOS VIZCARRA S.A.": {
+    "num": 53,
+    "status": "FINALIZADO",
+    "almacen_id": "302888",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\53_EQUIPOS_MEDICOS_VIZCARRA_S_A.png",
+    "completed_at": "2026-11-11 14:43:10"
+  },
+  "ESIGAR QUIRURGICA S.A DE C.V. CONS": {
+    "num": 54,
+    "status": "FINALIZADO",
+    "almacen_id": "302889",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\54_ESIGAR_QUIRURGICA_S_A_DE_C_V__CONS.png",
+    "completed_at": "2026-11-11 14:43:22"
+  },
+  "ESIGAR QUIRURGICA SA DE CV": {
+    "num": 55,
+    "status": "FINALIZADO",
+    "almacen_id": "302890",
+    "total_excel": 9,
+    "total_matched": 9,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\55_ESIGAR_QUIRURGICA_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:43:35"
+  },
+  "ESPECIALISTAS EN APLICACIONES Y SOPORTE TECNICO MEDICO S.A DE C.V.": {
+    "num": 56,
+    "status": "FINALIZADO",
+    "almacen_id": "302892",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\56_ESPECIALISTAS_EN_APLICACIONES_Y_SOPORTE_TECNICO_MEDICO_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:43:47"
+  },
+  "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V": {
+    "num": 57,
+    "status": "FINALIZADO",
+    "almacen_id": "302893",
+    "total_excel": 21,
+    "total_matched": 21,
+    "total_pages": 2,
+    "proof_img": "scratch/proofs_inventarios\\57_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:44:05"
+  },
+  "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V. UNOPS": {
+    "num": 58,
+    "status": "FINALIZADO",
+    "almacen_id": "302894",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\58_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V__UNOPS.png",
+    "completed_at": "2026-11-11 14:44:18"
+  },
+  "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V.-CONS": {
+    "num": 59,
+    "status": "FINALIZADO",
+    "almacen_id": "302895",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\59_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V_-CONS.png",
+    "completed_at": "2026-11-11 14:44:30"
+  },
+  "ESTERI-MEX SA DE CV": {
+    "num": 60,
+    "status": "FINALIZADO",
+    "almacen_id": "302896",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\60_ESTERI-MEX_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:44:42"
+  },
+  "FARMACEUTICA MEDIKAMENTA SA. DE C.V.": {
+    "num": 61,
+    "status": "FINALIZADO",
+    "almacen_id": "302898",
+    "total_excel": 23,
+    "total_matched": 23,
+    "total_pages": 2,
+    "proof_img": "scratch/proofs_inventarios\\61_FARMACEUTICA_MEDIKAMENTA_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:45:01"
+  },
+  "FARMALIC SA. DE C.V.": {
+    "num": 62,
+    "status": "FINALIZADO",
+    "almacen_id": "302899",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\62_FARMALIC_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:45:13"
+  },
+  "FRESENIUS KABI MEXICO S.A DE C.V": {
+    "num": 63,
+    "status": "FINALIZADO",
+    "almacen_id": "302900",
+    "total_excel": 6,
+    "total_matched": 6,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\63_FRESENIUS_KABI_MEXICO_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:45:26"
+  },
+  "FRESENIUS KABI MEXICO S.A DE C.V CONS": {
+    "num": 64,
+    "status": "FINALIZADO",
+    "almacen_id": "302901",
+    "total_excel": 2,
+    "total_matched": 2,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\64_FRESENIUS_KABI_MEXICO_S_A_DE_C_V_CONS.png",
+    "completed_at": "2026-11-11 14:45:38"
+  },
+  "GALA PHARMA SA DE C.V": {
+    "num": 65,
+    "status": "FINALIZADO",
+    "almacen_id": "302902",
+    "total_excel": 4,
+    "total_matched": 4,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\65_GALA_PHARMA_SA_DE_C_V.png",
+    "completed_at": "2026-11-11 14:45:50"
+  },
+  "GALIA TEXTIL S.A. DE C.V.-CONS": {
+    "num": 66,
+    "status": "FINALIZADO",
+    "almacen_id": "302903",
+    "total_excel": 68,
+    "total_matched": 68,
+    "total_pages": 4,
+    "proof_img": "scratch/proofs_inventarios\\66_GALIA_TEXTIL_S_A__DE_C_V_-CONS.png",
+    "completed_at": "2026-11-11 14:46:21"
+  },
+  "GARKEN MEDICAL S.A. DE C.V.": {
+    "num": 67,
+    "status": "FINALIZADO",
+    "almacen_id": "302904",
+    "total_excel": 10,
+    "total_matched": 10,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\67_GARKEN_MEDICAL_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:46:33"
+  },
+  "GLOBAL BUSINESS GROUP SA. DE C.V.": {
+    "num": 68,
+    "status": "FINALIZADO",
+    "almacen_id": "302905",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\68_GLOBAL_BUSINESS_GROUP_SA__DE_C_V.png",
+    "completed_at": "2026-11-11 14:46:45"
+  },
+  "GRUNENTHAL DE MEXICO SA DE CV": {
+    "num": 69,
+    "status": "FINALIZADO",
+    "almacen_id": "302906",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\69_GRUNENTHAL_DE_MEXICO_SA_DE_CV.png",
+    "completed_at": "2026-11-11 14:46:58"
+  },
+  "GRUNENTHAL DE MEXICO SA DE CV CONS": {
+    "num": 70,
+    "status": "FINALIZADO",
+    "almacen_id": "302907",
+    "total_excel": 1,
+    "total_matched": 1,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\70_GRUNENTHAL_DE_MEXICO_SA_DE_CV_CONS.png",
+    "completed_at": "2026-11-11 14:47:10"
+  },
+  "GRUPO COMERCIAL JEMA S.A. DE C.V.": {
+    "num": 71,
+    "status": "FINALIZADO",
+    "almacen_id": "302909",
+    "total_excel": 18,
+    "total_matched": 18,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\71_GRUPO_COMERCIAL_JEMA_S_A__DE_C_V.png",
+    "completed_at": "2026-11-11 14:47:23"
+  },
+  "GRUPO INDUSTRIAL POSEIDON S.A DE C.V": {
+    "num": 72,
+    "status": "FINALIZADO",
+    "almacen_id": "302910",
+    "total_excel": 113,
+    "total_matched": 113,
+    "total_pages": 7,
+    "proof_img": "scratch/proofs_inventarios\\72_GRUPO_INDUSTRIAL_POSEIDON_S_A_DE_C_V.png",
+    "completed_at": "2026-11-11 14:48:10"
+  },
+  "GRUPO INDUSTRIAL POSEIDON S.A. DE C.V.-CONS": {
+    "num": 73,
+    "status": "FINALIZADO",
+    "almacen_id": "302911",
+    "total_excel": 39,
+    "total_matched": 39,
+    "total_pages": 3,
+    "proof_img": "scratch/proofs_inventarios\\73_GRUPO_INDUSTRIAL_POSEIDON_S_A__DE_C_V_-CONS.png",
+    "completed_at": "2026-11-11 14:48:35"
+  },
+  "GRUPO INDUSTRIAL POSEIDON SA DE CV UNOPS 2021": {
+    "num": 74,
+    "status": "FINALIZADO",
+    "almacen_id": "302912",
+    "total_excel": 3,
+    "total_matched": 3,
+    "total_pages": 1,
+    "proof_img": "scratch/proofs_inventarios\\74_GRUPO_INDUSTRIAL_POSEIDON_SA_DE_CV_UNOPS_2021.png",
+    "completed_at": "2026-11-11 14:48:47"
+  },
+  "SECRETARIA DE SALUD GOBIERNO DE CHIAPAS 2024-2030": {
+    "num": 75,
+    "status": "FINALIZADO",
+    "almacen_id": "302784",
+    "total_excel": 255,
+    "total_matched": 255,
+    "total_pages": 15,
+    "proof_img": "scratch/proofs_inventarios\\75_SECRETARIA_DE_SALUD_GOBIERNO_DE_CHIAPAS_2024-2030.png",
+    "completed_at": "2026-11-11 14:50:21"
+  }
+}

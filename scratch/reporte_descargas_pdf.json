@@ -1,0 +1,686 @@
+[
+  {
+    "num": 1,
+    "nombre": "ABASTECEDORA DE INSUMOS PARA LA SALUD S.A. DE C.V.",
+    "almacen_id": "5811",
+    "inventario_id": "302810",
+    "archivo": "01_ABASTECEDORA_DE_INSUMOS_PARA_LA_SALUD_S_A__DE_C_V.pdf",
+    "size_kb": 40.8,
+    "estado": "OK"
+  },
+  {
+    "num": 2,
+    "nombre": "ADMINISTRADORA DE MARCAS FARMACEUTICAS",
+    "almacen_id": "6643",
+    "inventario_id": "302812",
+    "archivo": "02_ADMINISTRADORA_DE_MARCAS_FARMACEUTICAS.pdf",
+    "size_kb": 37.1,
+    "estado": "OK"
+  },
+  {
+    "num": 3,
+    "nombre": "ADVANTA PHARMA SAPI DE CV",
+    "almacen_id": "6621",
+    "inventario_id": "302823",
+    "archivo": "03_ADVANTA_PHARMA_SAPI_DE_CV.pdf",
+    "size_kb": 41.8,
+    "estado": "OK"
+  },
+  {
+    "num": 4,
+    "nombre": "AGYPROM",
+    "almacen_id": "13074",
+    "inventario_id": "302824",
+    "archivo": "04_AGYPROM.pdf",
+    "size_kb": 36.8,
+    "estado": "OK"
+  },
+  {
+    "num": 5,
+    "nombre": "AGYPROM SA DE CV UNOPS 2021",
+    "almacen_id": "3876",
+    "inventario_id": "302828",
+    "archivo": "05_AGYPROM_SA_DE_CV_UNOPS_2021.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 6,
+    "nombre": "AMBIDERM SA DE CV",
+    "almacen_id": "6616",
+    "inventario_id": "302831",
+    "archivo": "06_AMBIDERM_SA_DE_CV.pdf",
+    "size_kb": 47.0,
+    "estado": "OK"
+  },
+  {
+    "num": 7,
+    "nombre": "AMC BIOMEDICAL",
+    "almacen_id": "13046",
+    "inventario_id": "302832",
+    "archivo": "07_AMC_BIOMEDICAL.pdf",
+    "size_kb": 39.4,
+    "estado": "OK"
+  },
+  {
+    "num": 8,
+    "nombre": "ANSOF COMERCIALIZADORES SA. DE C.V.",
+    "almacen_id": "11557",
+    "inventario_id": "302834",
+    "archivo": "08_ANSOF_COMERCIALIZADORES_SA__DE_C_V.pdf",
+    "size_kb": 36.2,
+    "estado": "OK"
+  },
+  {
+    "num": 9,
+    "nombre": "ARGOSOL",
+    "almacen_id": "13047",
+    "inventario_id": "302835",
+    "archivo": "09_ARGOSOL.pdf",
+    "size_kb": 36.7,
+    "estado": "OK"
+  },
+  {
+    "num": 10,
+    "nombre": "ARROW INTERNACIONAL DE MEXICO S.A. DE C.V",
+    "almacen_id": "3885",
+    "inventario_id": "302836",
+    "archivo": "10_ARROW_INTERNACIONAL_DE_MEXICO_S_A__DE_C_V.pdf",
+    "size_kb": 69.1,
+    "estado": "OK"
+  },
+  {
+    "num": 11,
+    "nombre": "ARTE MANUFACTURA Y COMERCIO SA DE CV",
+    "almacen_id": "11842",
+    "inventario_id": "302837",
+    "archivo": "11_ARTE_MANUFACTURA_Y_COMERCIO_SA_DE_CV.pdf",
+    "size_kb": 37.6,
+    "estado": "OK"
+  },
+  {
+    "num": 12,
+    "nombre": "ARVIEN S.A. DE C.V.- CONS",
+    "almacen_id": "3835",
+    "inventario_id": "302838",
+    "archivo": "12_ARVIEN_S_A__DE_C_V_-_CONS.pdf",
+    "size_kb": 37.8,
+    "estado": "OK"
+  },
+  {
+    "num": 13,
+    "nombre": "ARVIEN S.A. DE C.V.- PROV",
+    "almacen_id": "3847",
+    "inventario_id": "302840",
+    "archivo": "13_ARVIEN_S_A__DE_C_V_-_PROV.pdf",
+    "size_kb": 37.3,
+    "estado": "OK"
+  },
+  {
+    "num": 14,
+    "nombre": "ASOKAM S.A. DE C.V.",
+    "almacen_id": "3910",
+    "inventario_id": "302841",
+    "archivo": "14_ASOKAM_S_A__DE_C_V.pdf",
+    "size_kb": 39.4,
+    "estado": "OK"
+  },
+  {
+    "num": 15,
+    "nombre": "ATYDE MEXICO SA. DE C.V.",
+    "almacen_id": "10882",
+    "inventario_id": "302842",
+    "archivo": "15_ATYDE_MEXICO_SA__DE_C_V.pdf",
+    "size_kb": 36.2,
+    "estado": "OK"
+  },
+  {
+    "num": 16,
+    "nombre": "AZTEC MEDIC S.A DE C.V",
+    "almacen_id": "11514",
+    "inventario_id": "302843",
+    "archivo": "16_AZTEC_MEDIC_S_A_DE_C_V.pdf",
+    "size_kb": 36.7,
+    "estado": "OK"
+  },
+  {
+    "num": 17,
+    "nombre": "B BRAUN DE MEXICO SAPI DE CV",
+    "almacen_id": "5762",
+    "inventario_id": "302844",
+    "archivo": "17_B_BRAUN_DE_MEXICO_SAPI_DE_CV.pdf",
+    "size_kb": 39.4,
+    "estado": "OK"
+  },
+  {
+    "num": 18,
+    "nombre": "BECTON DICKINSON DE MEXICO S.A DE C.V- CONS",
+    "almacen_id": "3838",
+    "inventario_id": "302845",
+    "archivo": "18_BECTON_DICKINSON_DE_MEXICO_S_A_DE_C_V-_CONS.pdf",
+    "size_kb": 43.8,
+    "estado": "OK"
+  },
+  {
+    "num": 19,
+    "nombre": "BECTON DICKINSON DE MEXICO S.A. DE C.V.",
+    "almacen_id": "11927",
+    "inventario_id": "302846",
+    "archivo": "19_BECTON_DICKINSON_DE_MEXICO_S_A__DE_C_V.pdf",
+    "size_kb": 52.9,
+    "estado": "OK"
+  },
+  {
+    "num": 20,
+    "nombre": "BOSTON MEDICALDEVICE DE MEXICO S DE R.L. DE C.V",
+    "almacen_id": "3882",
+    "inventario_id": "302847",
+    "archivo": "20_BOSTON_MEDICALDEVICE_DE_MEXICO_S_DE_R_L__DE_C_V.pdf",
+    "size_kb": 41.5,
+    "estado": "OK"
+  },
+  {
+    "num": 21,
+    "nombre": "BOSTON SCIENTIFIC DE MEXICO S.A DE R.L.",
+    "almacen_id": "3904",
+    "inventario_id": "302848",
+    "archivo": "21_BOSTON_SCIENTIFIC_DE_MEXICO_S_A_DE_R_L.pdf",
+    "size_kb": 36.3,
+    "estado": "OK"
+  },
+  {
+    "num": 22,
+    "nombre": "BOSTON SCIENTIFIC DE MEXICO SA DE CV",
+    "almacen_id": "13026",
+    "inventario_id": "302849",
+    "archivo": "22_BOSTON_SCIENTIFIC_DE_MEXICO_SA_DE_CV.pdf",
+    "size_kb": 42.6,
+    "estado": "OK"
+  },
+  {
+    "num": 23,
+    "nombre": "BSN MEDICAL DC SA DE CV",
+    "almacen_id": "3884",
+    "inventario_id": "302850",
+    "archivo": "23_BSN_MEDICAL_DC_SA_DE_CV.pdf",
+    "size_kb": 36.2,
+    "estado": "OK"
+  },
+  {
+    "num": 24,
+    "nombre": "CARDINAL HEALTH MEXICO 514 S DE RL DE C.V.",
+    "almacen_id": "3899",
+    "inventario_id": "302851",
+    "archivo": "24_CARDINAL_HEALTH_MEXICO_514_S_DE_RL_DE_C_V.pdf",
+    "size_kb": 36.6,
+    "estado": "OK"
+  },
+  {
+    "num": 25,
+    "nombre": "CASA PLARRE SA. DE C.V.",
+    "almacen_id": "7499",
+    "inventario_id": "302852",
+    "archivo": "25_CASA_PLARRE_SA__DE_C_V.pdf",
+    "size_kb": 37.8,
+    "estado": "OK"
+  },
+  {
+    "num": 26,
+    "nombre": "CHARDANY COMPANY",
+    "almacen_id": "7101",
+    "inventario_id": "302854",
+    "archivo": "26_CHARDANY_COMPANY.pdf",
+    "size_kb": 38.3,
+    "estado": "OK"
+  },
+  {
+    "num": 27,
+    "nombre": "CHC Y ASOCIADOS COMERCIALIZADORA SA DE CV",
+    "almacen_id": "6607",
+    "inventario_id": "302855",
+    "archivo": "27_CHC_Y_ASOCIADOS_COMERCIALIZADORA_SA_DE_CV.pdf",
+    "size_kb": 36.5,
+    "estado": "OK"
+  },
+  {
+    "num": 28,
+    "nombre": "CIRCUITO INTENSIVOS MEDICOS",
+    "almacen_id": "13027",
+    "inventario_id": "302856",
+    "archivo": "28_CIRCUITO_INTENSIVOS_MEDICOS.pdf",
+    "size_kb": 36.3,
+    "estado": "OK"
+  },
+  {
+    "num": 29,
+    "nombre": "CLINILABS DISTRIBUCIONES CIENTIFICAS SA DE CV",
+    "almacen_id": "6644",
+    "inventario_id": "302857",
+    "archivo": "29_CLINILABS_DISTRIBUCIONES_CIENTIFICAS_SA_DE_CV.pdf",
+    "size_kb": 36.3,
+    "estado": "OK"
+  },
+  {
+    "num": 30,
+    "nombre": "COMERCIAL OFIMED S.A. DE C.V.",
+    "almacen_id": "5146",
+    "inventario_id": "302858",
+    "archivo": "30_COMERCIAL_OFIMED_S_A__DE_C_V.pdf",
+    "size_kb": 38.6,
+    "estado": "OK"
+  },
+  {
+    "num": 31,
+    "nombre": "COMERCIALIZADORA ARVIEN S.A DE C.V",
+    "almacen_id": "13073",
+    "inventario_id": "302860",
+    "archivo": "31_COMERCIALIZADORA_ARVIEN_S_A_DE_C_V.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 32,
+    "nombre": "COMERCIALIZADORA DE INSUMOS PARA LA SALUD SA DE CV",
+    "almacen_id": "6798",
+    "inventario_id": "302861",
+    "archivo": "32_COMERCIALIZADORA_DE_INSUMOS_PARA_LA_SALUD_SA_DE_CV.pdf",
+    "size_kb": 36.7,
+    "estado": "OK"
+  },
+  {
+    "num": 33,
+    "nombre": "COMERCIALIZADORA DE PRODUCTOS BASICOS PARA LA SALUD S DE R.L DE C.V",
+    "almacen_id": "11827",
+    "inventario_id": "302862",
+    "archivo": "33_COMERCIALIZADORA_DE_PRODUCTOS_BASICOS_PARA_LA_SALUD_S_DE_R_L_DE_C_V.pdf",
+    "size_kb": 37.1,
+    "estado": "OK"
+  },
+  {
+    "num": 34,
+    "nombre": "CONSORCIO MEDICO MIUS S DE R.L. DE C.V.",
+    "almacen_id": "9707",
+    "inventario_id": "302863",
+    "archivo": "34_CONSORCIO_MEDICO_MIUS_S_DE_R_L__DE_C_V.pdf",
+    "size_kb": 37.0,
+    "estado": "OK"
+  },
+  {
+    "num": 35,
+    "nombre": "CONSUMIBLES PARA LA SALUD S.A DE C.V.",
+    "almacen_id": "3909",
+    "inventario_id": "302865",
+    "archivo": "35_CONSUMIBLES_PARA_LA_SALUD_S_A_DE_C_V.pdf",
+    "size_kb": 37.1,
+    "estado": "OK"
+  },
+  {
+    "num": 36,
+    "nombre": "CONTROLADORA MEDIKA S.A DE C.V.",
+    "almacen_id": "3926",
+    "inventario_id": "302866",
+    "archivo": "36_CONTROLADORA_MEDIKA_S_A_DE_C_V.pdf",
+    "size_kb": 39.5,
+    "estado": "OK"
+  },
+  {
+    "num": 37,
+    "nombre": "CORDIS MEDICAL MEXICO S DE R.L. DE C.V.",
+    "almacen_id": "11644",
+    "inventario_id": "302867",
+    "archivo": "37_CORDIS_MEDICAL_MEXICO_S_DE_R_L__DE_C_V.pdf",
+    "size_kb": 37.1,
+    "estado": "OK"
+  },
+  {
+    "num": 38,
+    "nombre": "CORPORACION ARMO SA. DE C.V.",
+    "almacen_id": "9721",
+    "inventario_id": "302868",
+    "archivo": "38_CORPORACION_ARMO_SA__DE_C_V.pdf",
+    "size_kb": 36.1,
+    "estado": "OK"
+  },
+  {
+    "num": 39,
+    "nombre": "DEGASA SA DE C.V CONS",
+    "almacen_id": "3823",
+    "inventario_id": "302869",
+    "archivo": "39_DEGASA_SA_DE_C_V_CONS.pdf",
+    "size_kb": 100.3,
+    "estado": "OK"
+  },
+  {
+    "num": 40,
+    "nombre": "DENTILAB SA. DE C.V.",
+    "almacen_id": "9711",
+    "inventario_id": "302870",
+    "archivo": "40_DENTILAB_SA__DE_C_V.pdf",
+    "size_kb": 38.1,
+    "estado": "OK"
+  },
+  {
+    "num": 41,
+    "nombre": "DETECCION Y DIAGNOSTICO ESPECIALIZADO EN SALUD",
+    "almacen_id": "11864",
+    "inventario_id": "302872",
+    "archivo": "41_DETECCION_Y_DIAGNOSTICO_ESPECIALIZADO_EN_SALUD.pdf",
+    "size_kb": 36.2,
+    "estado": "OK"
+  },
+  {
+    "num": 42,
+    "nombre": "DISPOSITIVOS IMPLANTABLES DE MEXICO SA. DE C.V.",
+    "almacen_id": "13032",
+    "inventario_id": "302873",
+    "archivo": "42_DISPOSITIVOS_IMPLANTABLES_DE_MEXICO_SA__DE_C_V.pdf",
+    "size_kb": 36.6,
+    "estado": "OK"
+  },
+  {
+    "num": 43,
+    "nombre": "DJM-DON",
+    "almacen_id": "3745",
+    "inventario_id": "302874",
+    "archivo": "43_DJM-DON.pdf",
+    "size_kb": 36.1,
+    "estado": "OK"
+  },
+  {
+    "num": 44,
+    "nombre": "DL MEDICA SA. DE C.V.",
+    "almacen_id": "8336",
+    "inventario_id": "302875",
+    "archivo": "44_DL_MEDICA_SA__DE_C_V.pdf",
+    "size_kb": 75.2,
+    "estado": "OK"
+  },
+  {
+    "num": 45,
+    "nombre": "DL MEDICAL S.A. DE C.V UNOPS 2021",
+    "almacen_id": "3887",
+    "inventario_id": "302876",
+    "archivo": "45_DL_MEDICAL_S_A__DE_C_V_UNOPS_2021.pdf",
+    "size_kb": 37.1,
+    "estado": "OK"
+  },
+  {
+    "num": 46,
+    "nombre": "DL MEDICAL S.A. DE C.V.-CONS",
+    "almacen_id": "3836",
+    "inventario_id": "302878",
+    "archivo": "46_DL_MEDICAL_S_A__DE_C_V_-CONS.pdf",
+    "size_kb": 40.3,
+    "estado": "OK"
+  },
+  {
+    "num": 47,
+    "nombre": "DONACION",
+    "almacen_id": "3743",
+    "inventario_id": "302879",
+    "archivo": "47_DONACION.pdf",
+    "size_kb": 40.7,
+    "estado": "OK"
+  },
+  {
+    "num": 48,
+    "nombre": "DURFA S.A DE C.V",
+    "almacen_id": "11457",
+    "inventario_id": "302880",
+    "archivo": "48_DURFA_S_A_DE_C_V.pdf",
+    "size_kb": 38.8,
+    "estado": "OK"
+  },
+  {
+    "num": 49,
+    "nombre": "ECO DISTRIBUIDORA MEDICA S A DE C V CONS",
+    "almacen_id": "3752",
+    "inventario_id": "302881",
+    "archivo": "49_ECO_DISTRIBUIDORA_MEDICA_S_A_DE_C_V_CONS.pdf",
+    "size_kb": 36.5,
+    "estado": "OK"
+  },
+  {
+    "num": 50,
+    "nombre": "EDIGAR QUIRURGICA",
+    "almacen_id": "3833",
+    "inventario_id": "302882",
+    "archivo": "50_EDIGAR_QUIRURGICA.pdf",
+    "size_kb": 36.6,
+    "estado": "OK"
+  },
+  {
+    "num": 51,
+    "nombre": "ENDOMEDICA SA. DE C.V.",
+    "almacen_id": "10776",
+    "inventario_id": "302884",
+    "archivo": "51_ENDOMEDICA_SA__DE_C_V.pdf",
+    "size_kb": 50.5,
+    "estado": "OK"
+  },
+  {
+    "num": 52,
+    "nombre": "ENDOPP MEDICAL SA DE C.V.",
+    "almacen_id": "11567",
+    "inventario_id": "302885",
+    "archivo": "52_ENDOPP_MEDICAL_SA_DE_C_V.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 53,
+    "nombre": "EQUIPOS MEDICOS DEL SUR",
+    "almacen_id": "5763",
+    "inventario_id": "302886",
+    "archivo": "53_EQUIPOS_MEDICOS_DEL_SUR.pdf",
+    "size_kb": 36.8,
+    "estado": "OK"
+  },
+  {
+    "num": 54,
+    "nombre": "EQUIPOS MEDICOS QUIRURGICOS S.A. DE C.V.-DON",
+    "almacen_id": "3862",
+    "inventario_id": "302887",
+    "archivo": "54_EQUIPOS_MEDICOS_QUIRURGICOS_S_A__DE_C_V_-DON.pdf",
+    "size_kb": 36.3,
+    "estado": "OK"
+  },
+  {
+    "num": 55,
+    "nombre": "EQUIPOS MEDICOS VIZCARRA S.A.",
+    "almacen_id": "3922",
+    "inventario_id": "302888",
+    "archivo": "55_EQUIPOS_MEDICOS_VIZCARRA_S_A.pdf",
+    "size_kb": 37.4,
+    "estado": "OK"
+  },
+  {
+    "num": 56,
+    "nombre": "ESIGAR QUIRURGICA S.A DE C.V. CONS",
+    "almacen_id": "3871",
+    "inventario_id": "302889",
+    "archivo": "56_ESIGAR_QUIRURGICA_S_A_DE_C_V__CONS.pdf",
+    "size_kb": 36.6,
+    "estado": "OK"
+  },
+  {
+    "num": 57,
+    "nombre": "ESIGAR QUIRURGICA SA DE CV",
+    "almacen_id": "3880",
+    "inventario_id": "302890",
+    "archivo": "57_ESIGAR_QUIRURGICA_SA_DE_CV.pdf",
+    "size_kb": 38.4,
+    "estado": "OK"
+  },
+  {
+    "num": 58,
+    "nombre": "ESPECIALISTAS EN APLICACIONES Y SOPORTE TECNICO MEDICO S.A DE C.V.",
+    "almacen_id": "3907",
+    "inventario_id": "302892",
+    "archivo": "58_ESPECIALISTAS_EN_APLICACIONES_Y_SOPORTE_TECNICO_MEDICO_S_A_DE_C_V.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 59,
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V",
+    "almacen_id": "3890",
+    "inventario_id": "302893",
+    "archivo": "59_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V.pdf",
+    "size_kb": 48.0,
+    "estado": "OK"
+  },
+  {
+    "num": 60,
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V. UNOPS",
+    "almacen_id": "5527",
+    "inventario_id": "302894",
+    "archivo": "60_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V__UNOPS.pdf",
+    "size_kb": 36.5,
+    "estado": "OK"
+  },
+  {
+    "num": 61,
+    "nombre": "ESPECIALISTAS EN ESTERILIZACION Y ENVASES S.A. DE C.V.-CONS",
+    "almacen_id": "3841",
+    "inventario_id": "302895",
+    "archivo": "61_ESPECIALISTAS_EN_ESTERILIZACION_Y_ENVASES_S_A__DE_C_V_-CONS.pdf",
+    "size_kb": 37.3,
+    "estado": "OK"
+  },
+  {
+    "num": 62,
+    "nombre": "ESTERI-MEX SA DE CV",
+    "almacen_id": "13070",
+    "inventario_id": "302896",
+    "archivo": "62_ESTERI-MEX_SA_DE_CV.pdf",
+    "size_kb": 36.2,
+    "estado": "OK"
+  },
+  {
+    "num": 63,
+    "nombre": "FARMACEUTICA MEDIKAMENTA SA. DE C.V.",
+    "almacen_id": "11642",
+    "inventario_id": "302898",
+    "archivo": "63_FARMACEUTICA_MEDIKAMENTA_SA__DE_C_V.pdf",
+    "size_kb": 44.3,
+    "estado": "OK"
+  },
+  {
+    "num": 64,
+    "nombre": "FARMALIC SA. DE C.V.",
+    "almacen_id": "7681",
+    "inventario_id": "302899",
+    "archivo": "64_FARMALIC_SA__DE_C_V.pdf",
+    "size_kb": 39.3,
+    "estado": "OK"
+  },
+  {
+    "num": 65,
+    "nombre": "FRESENIUS KABI MEXICO S.A DE C.V",
+    "almacen_id": "12934",
+    "inventario_id": "302900",
+    "archivo": "65_FRESENIUS_KABI_MEXICO_S_A_DE_C_V.pdf",
+    "size_kb": 37.0,
+    "estado": "OK"
+  },
+  {
+    "num": 66,
+    "nombre": "FRESENIUS KABI MEXICO S.A DE C.V CONS",
+    "almacen_id": "3870",
+    "inventario_id": "302901",
+    "archivo": "66_FRESENIUS_KABI_MEXICO_S_A_DE_C_V_CONS.pdf",
+    "size_kb": 36.3,
+    "estado": "OK"
+  },
+  {
+    "num": 67,
+    "nombre": "GALA PHARMA SA DE C.V",
+    "almacen_id": "11525",
+    "inventario_id": "302902",
+    "archivo": "67_GALA_PHARMA_SA_DE_C_V.pdf",
+    "size_kb": 37.9,
+    "estado": "OK"
+  },
+  {
+    "num": 68,
+    "nombre": "GALIA TEXTIL S.A. DE C.V.-CONS",
+    "almacen_id": "3826",
+    "inventario_id": "302903",
+    "archivo": "68_GALIA_TEXTIL_S_A__DE_C_V_-CONS.pdf",
+    "size_kb": 59.3,
+    "estado": "OK"
+  },
+  {
+    "num": 69,
+    "nombre": "GARKEN MEDICAL S.A. DE C.V.",
+    "almacen_id": "5164",
+    "inventario_id": "302904",
+    "archivo": "69_GARKEN_MEDICAL_S_A__DE_C_V.pdf",
+    "size_kb": 38.4,
+    "estado": "OK"
+  },
+  {
+    "num": 70,
+    "nombre": "GLOBAL BUSINESS GROUP SA. DE C.V.",
+    "almacen_id": "9647",
+    "inventario_id": "302905",
+    "archivo": "70_GLOBAL_BUSINESS_GROUP_SA__DE_C_V.pdf",
+    "size_kb": 36.9,
+    "estado": "OK"
+  },
+  {
+    "num": 71,
+    "nombre": "GRUNENTHAL DE MEXICO SA DE CV",
+    "almacen_id": "13060",
+    "inventario_id": "302906",
+    "archivo": "71_GRUNENTHAL_DE_MEXICO_SA_DE_CV.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 72,
+    "nombre": "GRUNENTHAL DE MEXICO SA DE CV CONS",
+    "almacen_id": "3822",
+    "inventario_id": "302907",
+    "archivo": "72_GRUNENTHAL_DE_MEXICO_SA_DE_CV_CONS.pdf",
+    "size_kb": 36.4,
+    "estado": "OK"
+  },
+  {
+    "num": 73,
+    "nombre": "GRUPO COMERCIAL JEMA S.A. DE C.V.",
+    "almacen_id": "5796",
+    "inventario_id": "302909",
+    "archivo": "73_GRUPO_COMERCIAL_JEMA_S_A__DE_C_V.pdf",
+    "size_kb": 44.1,
+    "estado": "OK"
+  },
+  {
+    "num": 74,
+    "nombre": "GRUPO INDUSTRIAL POSEIDON S.A DE C.V",
+    "almacen_id": "11496",
+    "inventario_id": "302910",
+    "archivo": "74_GRUPO_INDUSTRIAL_POSEIDON_S_A_DE_C_V.pdf",
+    "size_kb": 75.0,
+    "estado": "OK"
+  },
+  {
+    "num": 75,
+    "nombre": "GRUPO INDUSTRIAL POSEIDON S.A. DE C.V.-CONS",
+    "almacen_id": "3827",
+    "inventario_id": "302911",
+    "archivo": "75_GRUPO_INDUSTRIAL_POSEIDON_S_A__DE_C_V_-CONS.pdf",
+    "size_kb": 49.7,
+    "estado": "OK"
+  },
+  {
+    "num": 76,
+    "nombre": "GRUPO INDUSTRIAL POSEIDON SA DE CV UNOPS 2021",
+    "almacen_id": "3886",
+    "inventario_id": "302912",
+    "archivo": "76_GRUPO_INDUSTRIAL_POSEIDON_SA_DE_CV_UNOPS_2021.pdf",
+    "size_kb": 36.8,
+    "estado": "OK"
+  }
+]

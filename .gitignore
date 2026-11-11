@@ -33,6 +33,7 @@ ENV/
 # Excel & Temporary files
 *.xlsx
 *.xls
+!data/plantillas/*.xlsx
 *.pdf
 *.png
 !templates/*.png

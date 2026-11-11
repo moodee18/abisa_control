@@ -448,6 +448,7 @@ ALL_PERMISSIONS_CATALOG = [
     {"key": "ver_control_movimientos", "label": "Ver Control por Movimientos (Reporte Diario)", "group": "Control por Movimientos"},
     {"key": "gestionar_control_movimientos", "label": "Capturar Entradas, Subir Salidas PDF, Apoyos, Catálogos, Base Excel y Vaciar Control", "group": "Control por Movimientos"},
     {"key": "carga_archivos", "label": "Pestaña Carga de Archivos General", "group": "Sistema y Administración"},
+    {"key": "automatizacion_siia", "label": "Automatización Robótica SIIA (Altas Masivas y Seguimiento de Inventarios)", "group": "Automatización Robótica (SIIA)"},
     {"key": "ver_auditoria", "label": "Ver Historial de Auditoría (Logs)", "group": "Sistema y Administración"},
     {"key": "vaciar_sistema_total", "label": "Vaciado Total del Sistema (Reinicio Completo)", "group": "Sistema y Administración"},
     {"key": "gestionar_usuarios", "label": "Crear Usuarios y Asignar Permisos", "group": "Sistema y Administración"},

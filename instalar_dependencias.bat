@@ -25,3 +25,4 @@ echo   Ya puedes iniciar el sistema con: iniciar_panel.bat
 echo ===================================================
 echo.
 pause
+

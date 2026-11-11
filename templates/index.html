@@ -5511,6 +5511,7 @@
             { key: "ver_control_movimientos", label: "Ver Control por Movimientos (Reporte Diario)", group: "Control por Movimientos" },
             { key: "gestionar_control_movimientos", label: "Capturar, Importar PDF/Excel y Vaciar Control por Movimientos", group: "Control por Movimientos" },
             { key: "carga_archivos", label: "Pestaña Carga de Archivos Manual", group: "Administración y Sistema" },
+            { key: "automatizacion_siia", label: "Automatización Robótica SIIA (Altas Masivas y Seguimiento de Inventarios)", group: "Automatización Robótica (SIIA)" },
             { key: "ver_auditoria", label: "Ver Historial de Auditoría", group: "Administración y Sistema" },
             { key: "vaciar_sistema_total", label: "Vaciado Total del Sistema (Reinicio Completo)", group: "Administración y Sistema" },
             { key: "gestionar_usuarios", label: "Administrar Usuarios y Asignar Permisos", group: "Administración y Sistema" }
@@ -5643,7 +5644,7 @@
             if (tabId === 'tab-marbetes' && hasPerm('marbetes')) renderMarbetesPreview();
             if (tabId === 'tab-control-movimientos' && hasPerm('ver_control_movimientos')) loadControlMovimientos();
             if (tabId === 'tab-usuarios' && hasPerm('gestionar_usuarios')) loadUsersTable();
-            if (tabId === 'tab-siia-rpa') loadSiiaRpaStatus();
+            if (tabId === 'tab-siia-rpa' && hasPerm('automatizacion_siia')) loadSiiaRpaStatus();
         }
 
         // Cargar KPIs
@@ -10196,7 +10197,7 @@
                 { btnId: 'tabBtnClues', tabId: 'tab-clues', allowed: hasPerm('ver_matriz_clues') },
                 { btnId: 'tabBtnControlMov', tabId: 'tab-control-movimientos', allowed: hasPerm('ver_control_movimientos') },
                 { btnId: 'tabBtnUpload', tabId: 'tab-upload', allowed: hasPerm('carga_archivos') },
-                { btnId: 'tabBtnSiiaRpa', tabId: 'tab-siia-rpa', allowed: hasPerm('actualizar_inventario') || hasPerm('ver_inventario') || (window.currentUser && window.currentUser.is_superadmin) },
+                { btnId: 'tabBtnSiiaRpa', tabId: 'tab-siia-rpa', allowed: hasPerm('automatizacion_siia') },
                 { btnId: 'tabBtnMarbetes', tabId: 'tab-marbetes', allowed: hasPerm('marbetes') },
                 { btnId: 'tabBtnLogs', tabId: 'tab-logs', allowed: hasPerm('ver_auditoria') },
                 { btnId: 'tabBtnUsuarios', tabId: 'tab-usuarios', allowed: hasPerm('gestionar_usuarios') }
@@ -10447,6 +10448,7 @@
                 "Catálogo, Inventario y Marbetes": "fa-boxes-stacked",
                 "Movimientos SIIA y Matriz CLUES": "fa-arrows-left-right",
                 "Control por Movimientos": "fa-cubes-stacked",
+                "Automatización Robótica (SIIA)": "fa-robot",
                 "Administración y Sistema": "fa-shield-halved"
             };
 

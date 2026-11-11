@@ -2434,7 +2434,7 @@ async def siia_rpa_alta(
     file: UploadFile = File(...),
     localidad_id: str = Form("1836"),
     descargar_pdfs: bool = Form(True),
-    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
 ):
     """Ejecuta en segundo plano el alta masiva de inventario para almacenes especificados en un Excel."""
     state = siia_rpa_manager.get_state()
@@ -2461,7 +2461,7 @@ async def siia_rpa_seguimiento(
     localidad_id: str = Form("1836"),
     auto_finalizar: bool = Form(True),
     guardar_evidencias: bool = Form(True),
-    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
 ):
     """Ejecuta en segundo plano el seguimiento masivo de inventario (hoja por hoja, finalizado y evidencias)."""
     state = siia_rpa_manager.get_state()
@@ -2484,35 +2484,42 @@ async def siia_rpa_seguimiento(
 
 @app.get("/api/siia-rpa/status")
 async def siia_rpa_status(
-    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
 ):
     """Consulta el estado en tiempo real del motor RPA de inventarios."""
     return siia_rpa_manager.get_state()
 
 @app.post("/api/siia-rpa/cancel")
 async def siia_rpa_cancel(
-    current_user: Dict[str, Any] = Depends(require_any_permission("actualizar_inventario", "gestionar_movimientos", "ver_catalogo"))
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
 ):
     """Detiene y cancela la operación de RPA en curso."""
     siia_rpa_manager.cancel()
     return {"status": "cancelling", "message": "Se ha solicitado la detención del proceso RPA."}
 
 @app.get("/api/siia-rpa/download/altas-zip")
-async def siia_rpa_download_altas_zip():
+async def siia_rpa_download_altas_zip(
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
+):
     path = Path("downloads/Altas_Inventario_SIIA.zip")
     if not path.exists():
         raise HTTPException(status_code=404, detail="No se encontró el archivo ZIP de altas de inventario.")
     return FileResponse(str(path), filename="Altas_Inventario_SIIA.zip", media_type="application/zip")
 
 @app.get("/api/siia-rpa/download/evidencias-zip")
-async def siia_rpa_download_evidencias_zip():
+async def siia_rpa_download_evidencias_zip(
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
+):
     path = Path("downloads/Evidencias_Seguimiento_Inventarios.zip")
     if not path.exists():
         raise HTTPException(status_code=404, detail="No se encontró el archivo ZIP de evidencias de seguimiento.")
     return FileResponse(str(path), filename="Evidencias_Seguimiento_Inventarios.zip", media_type="application/zip")
 
 @app.get("/api/siia-rpa/template/{tipo}")
-async def siia_rpa_download_template(tipo: str):
+async def siia_rpa_download_template(
+    tipo: str,
+    current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
+):
     if tipo == "alta":
         path = Path("data/plantillas/Plantilla_Alta_Almacenes.xlsx")
         fn = "Plantilla_Alta_Almacenes.xlsx"

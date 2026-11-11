@@ -8686,23 +8686,6 @@
             </tr>`).join('');
         }
 
-            // Unidades
-            const undTbody = document.getElementById('ctrlUnidadesTableBody');
-            if (undTbody) {
-                if (ctrlUnidadesList.length === 0) {
-                    undTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No hay unidades registradas.</td></tr>';
-                } else {
-                    undTbody.innerHTML = ctrlUnidadesList.map(u => `<tr>
-                        <td style="font-weight: 700; color: var(--accent);">${u.codigo || u.clave_unidad}</td>
-                        <td style="font-weight: 600;">${u.descripcion || u.codigo || u.clave_unidad || '-'}</td>
-                        <td>
-                            ${hasPerm('gestionar_control_movimientos') ? `<button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('unidades', ${u.id})" title="Modificar unidad"><i class="fa-solid fa-pen-to-square"></i></button>` : '-'}
-                        </td>
-                    </tr>`).join('');
-                }
-            }
-        }
-
         // 9. Autocompletado Dinámico de Clave -> Descripción, UDM, Proveedor
         async function onCtrlEntradaClaveInput() {
             const raw = document.getElementById('ctrl_e_clave')?.value || '';

@@ -3384,6 +3384,30 @@
                             </div>
                         </div>
 
+                        <!-- Barra de Búsqueda y Filtro para Entradas Manuales -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 0.75rem 1rem;">
+                            <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 280px; flex-wrap: wrap;">
+                                <div class="search-box" style="flex: 1; min-width: 260px; padding: 0.42rem 0.8rem;">
+                                    <i class="fa-solid fa-magnifying-glass" style="color: var(--success);"></i>
+                                    <input type="text" id="ctrlEntradasSearchInput" placeholder="Buscar por Clave, Lote, Descripción, Proveedor, Folio / Orden..." oninput="applyControlEntradasFilter()">
+                                </div>
+                                <select id="ctrlEntradasFilterField" class="form-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.82rem; font-weight: 600;" onchange="applyControlEntradasFilter()" title="Elegir campo específico para filtrar">
+                                    <option value="all">Todo (Clave, Lote, Proveedor...)</option>
+                                    <option value="clave">Solo por Clave</option>
+                                    <option value="lote">Solo por Lote</option>
+                                    <option value="descripcion">Solo por Descripción</option>
+                                    <option value="proveedor">Solo por Proveedor</option>
+                                    <option value="orden">Solo por Folio / Orden / Contrato</option>
+                                </select>
+                                <button type="button" class="btn btn-secondary" id="btnClearCtrlEntradasSearch" onclick="clearControlEntradasFilter()" style="padding: 0.45rem 0.8rem; font-size: 0.8rem;">
+                                    <i class="fa-solid fa-xmark"></i> Limpiar
+                                </button>
+                            </div>
+                            <div id="ctrlEntradasCountSummary" style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); white-space: nowrap;">
+                                0 entradas registradas
+                            </div>
+                        </div>
+
                         <div class="table-responsive" style="max-height: 65vh; overflow-y: auto;">
                             <table>
                                 <thead style="position: sticky; top: 0; z-index: 10;">
@@ -3589,6 +3613,29 @@
                                 </div>
                             </div>
 
+                            <!-- Barra de Búsqueda y Filtro para Catálogo de Claves -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.85rem; background: rgba(0,0,0,0.02); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--card-border);">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 280px; flex-wrap: wrap;">
+                                    <div class="search-box" style="flex: 1; min-width: 250px; padding: 0.4rem 0.75rem;">
+                                        <i class="fa-solid fa-magnifying-glass" style="color: var(--primary);"></i>
+                                        <input type="text" id="ctrlCatalogoSearchInput" placeholder="Buscar por Clave, Descripción, Proveedor, Contrato..." oninput="applyControlCatalogoFilter()">
+                                    </div>
+                                    <select id="ctrlCatalogoFilterField" class="form-control" style="width: auto; padding: 0.42rem 0.75rem; font-size: 0.82rem; font-weight: 600;" onchange="applyControlCatalogoFilter()" title="Filtrar por campo">
+                                        <option value="all">Todo (Clave, Descripción, Proveedor...)</option>
+                                        <option value="clave">Solo por Clave</option>
+                                        <option value="descripcion">Solo por Descripción</option>
+                                        <option value="proveedor">Solo por Proveedor Default</option>
+                                        <option value="procedimiento">Solo por Procedimiento / Contrato</option>
+                                    </select>
+                                    <button type="button" class="btn btn-secondary" id="btnClearCtrlCatalogoSearch" onclick="clearControlCatalogoFilter()" style="padding: 0.42rem 0.75rem; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-xmark"></i> Limpiar
+                                    </button>
+                                </div>
+                                <div id="ctrlCatalogoCountSummary" style="font-size: 0.82rem; font-weight: 700; color: var(--text-muted); white-space: nowrap;">
+                                    0 claves en catálogo
+                                </div>
+                            </div>
+
                             <div class="table-responsive" style="max-height: 40vh; overflow-y: auto;">
                                 <table>
                                     <thead style="position: sticky; top: 0; z-index: 10;">
@@ -3615,14 +3662,20 @@
                             
                             <!-- Proveedores -->
                             <div style="border: 1px solid var(--card-border); border-radius: var(--radius); padding: 1.25rem; background: var(--card-bg);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
                                     <h4 style="margin: 0; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
                                         <i class="fa-solid fa-truck" style="color: #ea580c;"></i>
                                         Catálogo de Proveedores
                                     </h4>
-                                    <button type="button" class="btn btn-secondary" data-perm="gestionar_control_movimientos" onclick="openModalControlProveedor()" style="padding: 0.35rem 0.7rem; font-size: 0.78rem;">
-                                        <i class="fa-solid fa-plus"></i> Agregar Proveedor
-                                    </button>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <div class="search-box" style="min-width: 170px; padding: 0.28rem 0.6rem; font-size: 0.8rem;">
+                                            <i class="fa-solid fa-magnifying-glass" style="font-size: 0.75rem; color: #ea580c;"></i>
+                                            <input type="text" id="ctrlProvSearchInput" placeholder="Buscar proveedor..." oninput="applyControlProveedoresFilter()" style="font-size: 0.8rem;">
+                                        </div>
+                                        <button type="button" class="btn btn-secondary" data-perm="gestionar_control_movimientos" onclick="openModalControlProveedor()" style="padding: 0.35rem 0.7rem; font-size: 0.78rem;">
+                                            <i class="fa-solid fa-plus"></i> Agregar Proveedor
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="table-responsive" style="max-height: 30vh; overflow-y: auto;">
                                     <table>
@@ -7828,7 +7881,7 @@
         async function loadControlEntradas() {
             const tbody = document.getElementById('ctrlEntradasTableBody');
             if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="17" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando entradas...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="19" class="empty-state"><i class="fa-solid fa-spinner fa-spin"></i><br>Cargando entradas...</td></tr>';
 
             const mes = document.getElementById('ctrlMonthSelect')?.value || 'OCTUBRE';
             const ano = document.getElementById('ctrlYearSelect')?.value || '2026';
@@ -7837,30 +7890,103 @@
                 const res = await fetch(`/api/control-movimientos/entradas?mes=${encodeURIComponent(mes)}&ano=${encodeURIComponent(ano)}`);
                 const data = await res.json();
                 ctrlEntradasData = Array.isArray(data) ? data : (data.items || []);
-                renderControlEntradasTable(ctrlEntradasData);
+                applyControlEntradasFilter();
             } catch (err) {
-                tbody.innerHTML = `<tr><td colspan="17" class="empty-state" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i><br>Error al cargar entradas: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="19" class="empty-state" style="color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i><br>Error al cargar entradas: ${err.message}</td></tr>`;
             }
         }
 
-        function renderControlEntradasTable(items) {
+        function clearControlEntradasFilter() {
+            const inp = document.getElementById('ctrlEntradasSearchInput');
+            const fld = document.getElementById('ctrlEntradasFilterField');
+            if (inp) inp.value = '';
+            if (fld) fld.value = 'all';
+            applyControlEntradasFilter();
+        }
+
+        function applyControlEntradasFilter() {
+            const rawQuery = (document.getElementById('ctrlEntradasSearchInput')?.value || '').trim().toLowerCase();
+            const fieldMode = document.getElementById('ctrlEntradasFilterField')?.value || 'all';
+            const allItems = ctrlEntradasData || [];
+
+            let filtered = allItems;
+            const isFiltering = Boolean(rawQuery);
+
+            if (isFiltering) {
+                const tokens = rawQuery.split(/\s+/).filter(Boolean);
+                filtered = allItems.filter(e => {
+                    const clave = String(e.clave || '').toLowerCase();
+                    const claveDigits = clave.replace(/\./g, '');
+                    const lote = String(e.lote || '').toLowerCase();
+                    const desc = String(e.descripcion || '').toLowerCase();
+                    const prov = String(e.proveedor || '').toLowerCase();
+                    const ord = String(e.orden_suministro || e.folio_documento || '').toLowerCase();
+                    const proc = String(e.procedimiento || e.no_procedimiento || '').toLowerCase();
+                    const cont = String(e.contrato || e.no_contrato || '').toLowerCase();
+                    const alm = String(e.almacen || '').toLowerCase();
+                    const fecha = String(e.fecha_entrada || e.fecha_ajuste || '').toLowerCase();
+
+                    if (tokens.length === 0) return true;
+
+                    if (fieldMode === 'clave') {
+                        const hayClave = `${clave} ${claveDigits}`;
+                        return tokens.every(t => hayClave.includes(t) || hayClave.includes(t.replace(/\./g, '')));
+                    }
+                    if (fieldMode === 'lote') {
+                        return tokens.every(t => lote.includes(t));
+                    }
+                    if (fieldMode === 'descripcion') {
+                        return tokens.every(t => desc.includes(t));
+                    }
+                    if (fieldMode === 'proveedor') {
+                        return tokens.every(t => prov.includes(t));
+                    }
+                    if (fieldMode === 'orden') {
+                        const hayOrd = `${ord} ${proc} ${cont}`;
+                        return tokens.every(t => hayOrd.includes(t));
+                    }
+
+                    const fullHaystack = `${clave} ${claveDigits} ${lote} ${desc} ${prov} ${ord} ${proc} ${cont} ${alm} ${fecha}`;
+                    return tokens.every(t => fullHaystack.includes(t) || fullHaystack.includes(t.replace(/\./g, '')));
+                });
+            }
+
+            const countEl = document.getElementById('ctrlEntradasCountSummary');
+            if (countEl) {
+                const totalPzas = filtered.reduce((acc, it) => acc + ((parseFloat(it.inventario_inicial) || 0) + (parseFloat(it.entrada_por_ajuste) || 0) + (parseFloat(it.cantidad_recibida) || 0)), 0);
+                if (isFiltering) {
+                    countEl.innerHTML = `Mostrando <strong style="color: var(--success);">${formatNumber(filtered.length)}</strong> de ${formatNumber(allItems.length)} entradas &bull; Piezas: <strong style="color: #047857;">${formatNumber(totalPzas)}</strong>`;
+                } else {
+                    countEl.innerHTML = `${formatNumber(allItems.length)} entradas registradas &bull; Piezas: <strong style="color: #047857;">${formatNumber(totalPzas)}</strong>`;
+                }
+            }
+
+            renderControlEntradasTable(filtered, isFiltering && allItems.length > 0);
+        }
+
+        function renderControlEntradasTable(items, isFilteredEmptyCheck = false) {
             const tbody = document.getElementById('ctrlEntradasTableBody');
             if (!tbody) return;
 
             if (!items || items.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="17" class="empty-state"><i class="fa-solid fa-box-open"></i><br>No hay entradas manuales registradas. Haga clic en "+ Nueva Entrada Manual".</td></tr>';
+                if (isFilteredEmptyCheck) {
+                    tbody.innerHTML = '<tr><td colspan="19" class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><br>No se encontraron entradas manuales que coincidan con la búsqueda.<br><button type="button" class="btn btn-secondary" onclick="clearControlEntradasFilter()" style="margin-top: 0.5rem; padding: 0.35rem 0.75rem; font-size: 0.8rem;"><i class="fa-solid fa-xmark"></i> Limpiar Filtro</button></td></tr>';
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="19" class="empty-state"><i class="fa-solid fa-box-open"></i><br>No hay entradas manuales registradas. Haga clic en "+ Nueva Entrada Manual".</td></tr>';
+                }
                 return;
             }
 
             let html = '';
             items.forEach(e => {
                 const total = (e.inventario_inicial || 0) + (e.entrada_por_ajuste || 0) + (e.cantidad_recibida || 0);
+                const fechaDisplay = e.fecha_entrada || (e.fecha_ajuste ? `<span title="Fecha de Ajuste" style="color: #b45309; font-weight: 600;"><i class="fa-regular fa-calendar-check"></i> ${e.fecha_ajuste}</span>` : '-');
                 html += `<tr>
-                    <td>${e.fecha_entrada || ''}</td>
+                    <td>${fechaDisplay}</td>
                     <td style="font-weight: 700; font-family: monospace; color: #1e40af;">${e.orden_suministro || e.folio_documento || '-'}</td>
                     <td style="font-size: 0.78rem;">${e.procedimiento || e.no_procedimiento || '-'}</td>
                     <td style="font-size: 0.78rem;">${e.contrato || e.no_contrato || '-'}</td>
-                    <td style="font-weight: 700; font-family: monospace;">${e.clave || ''}</td>
+                    <td style="font-weight: 700; font-family: monospace; color: var(--primary);">${e.clave || ''}</td>
                     <td style="font-weight: 700;">${e.lote || ''}</td>
                     <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis;" title="${e.descripcion || ''}">${e.descripcion || ''}</td>
                     <td>${e.proveedor || '-'}</td>
@@ -8409,46 +8535,156 @@
         // 8. Cargar Pestaña de Catálogos (Claves, Proveedores, Unidades)
         async function loadControlCatalogosTab() {
             // Claves
-            const catTbody = document.getElementById('ctrlCatalogoTableBody');
-            if (catTbody) {
-                const keys = Object.values(ctrlCatalogMap);
-                if (keys.length === 0) {
-                    catTbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-barcode"></i><br>Catálogo vacío. Presione "Sincronizar desde Inventario" para cargarlo en 1 segundo.</td></tr>';
+            applyControlCatalogoFilter();
+
+            // Proveedores
+            applyControlProveedoresFilter();
+
+            // Unidades
+            const undTbody = document.getElementById('ctrlUnidadesTableBody');
+            if (undTbody) {
+                if (ctrlUnidadesList.length === 0) {
+                    undTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No hay unidades registradas.</td></tr>';
                 } else {
-                    catTbody.innerHTML = keys.slice(0, 300).map(c => `<tr>
-                        <td style="font-weight: 700; font-family: monospace;">${c.clave}</td>
-                        <td style="max-width: 280px; overflow: hidden; text-overflow: ellipsis;" title="${c.descripcion}">${c.descripcion}</td>
-                        <td>${c.udm_default || 'PZA'}</td>
-                        <td>${c.proveedor_default || '-'}</td>
-                        <td>${c.procedimiento || '-'}</td>
-                        <td>${c.contrato || '-'}</td>
-                        <td>${c.registro_sanitario || '-'}</td>
+                    undTbody.innerHTML = ctrlUnidadesList.map(u => `<tr>
+                        <td style="font-weight: 700; color: var(--accent);">${u.codigo || u.clave_unidad}</td>
+                        <td style="font-weight: 600;">${u.descripcion || u.codigo || u.clave_unidad || '-'}</td>
                         <td>
-                            ${hasPerm('gestionar_control_movimientos') ? `
-                            <div class="action-btn-group">
-                                <button type="button" class="btn-action btn-edit" onclick="editControlCatalogo(${c.id})" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
-                                <button type="button" class="btn-action btn-delete" onclick="deleteControlCatalogo(${c.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
-                            </div>` : '-'}
+                            ${hasPerm('gestionar_control_movimientos') ? `<button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('unidades', ${u.id})" title="Modificar unidad"><i class="fa-solid fa-pen-to-square"></i></button>` : '-'}
                         </td>
                     </tr>`).join('');
+                }
+            }
+        }
+
+        function clearControlCatalogoFilter() {
+            const inp = document.getElementById('ctrlCatalogoSearchInput');
+            const fld = document.getElementById('ctrlCatalogoFilterField');
+            if (inp) inp.value = '';
+            if (fld) fld.value = 'all';
+            applyControlCatalogoFilter();
+        }
+
+        function applyControlCatalogoFilter() {
+            const catTbody = document.getElementById('ctrlCatalogoTableBody');
+            if (!catTbody) return;
+
+            const allKeys = Object.values(ctrlCatalogMap || {});
+            const rawQuery = (document.getElementById('ctrlCatalogoSearchInput')?.value || '').trim().toLowerCase();
+            const fieldMode = document.getElementById('ctrlCatalogoFilterField')?.value || 'all';
+
+            if (allKeys.length === 0) {
+                catTbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-barcode"></i><br>Catálogo vacío. Presione "Sincronizar desde Inventario" para cargarlo en 1 segundo.</td></tr>';
+                const countEl = document.getElementById('ctrlCatalogoCountSummary');
+                if (countEl) countEl.textContent = '0 claves en catálogo';
+                return;
+            }
+
+            let filtered = allKeys;
+            const isFiltering = Boolean(rawQuery);
+
+            if (isFiltering) {
+                const tokens = rawQuery.split(/\s+/).filter(Boolean);
+                filtered = allKeys.filter(c => {
+                    const clave = String(c.clave || '').toLowerCase();
+                    const claveDigits = clave.replace(/\./g, '');
+                    const desc = String(c.descripcion || '').toLowerCase();
+                    const prov = String(c.proveedor_default || '').toLowerCase();
+                    const proc = String(c.procedimiento || '').toLowerCase();
+                    const cont = String(c.contrato || '').toLowerCase();
+                    const reg = String(c.registro_sanitario || '').toLowerCase();
+                    const udm = String(c.udm_default || '').toLowerCase();
+
+                    if (tokens.length === 0) return true;
+
+                    if (fieldMode === 'clave') {
+                        const hayClave = `${clave} ${claveDigits}`;
+                        return tokens.every(t => hayClave.includes(t) || hayClave.includes(t.replace(/\./g, '')));
+                    }
+                    if (fieldMode === 'descripcion') {
+                        return tokens.every(t => desc.includes(t));
+                    }
+                    if (fieldMode === 'proveedor') {
+                        return tokens.every(t => prov.includes(t));
+                    }
+                    if (fieldMode === 'procedimiento') {
+                        const hayProc = `${proc} ${cont} ${reg}`;
+                        return tokens.every(t => hayProc.includes(t));
+                    }
+
+                    const fullHay = `${clave} ${claveDigits} ${desc} ${prov} ${proc} ${cont} ${reg} ${udm}`;
+                    return tokens.every(t => fullHay.includes(t) || fullHay.includes(t.replace(/\./g, '')));
+                });
+            }
+
+            const countEl = document.getElementById('ctrlCatalogoCountSummary');
+            if (countEl) {
+                if (isFiltering) {
+                    countEl.innerHTML = `Mostrando <strong style="color: var(--primary);">${formatNumber(filtered.length)}</strong> de ${formatNumber(allKeys.length)} claves`;
+                } else {
+                    countEl.innerHTML = `${formatNumber(allKeys.length)} claves registradas`;
                 }
             }
 
-            // Proveedores
-            const provTbody = document.getElementById('ctrlProveedoresTableBody');
-            if (provTbody) {
-                if (ctrlProveedoresList.length === 0) {
-                    provTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No hay proveedores registrados.</td></tr>';
-                } else {
-                    provTbody.innerHTML = ctrlProveedoresList.map(p => `<tr>
-                        <td style="font-weight: 600;">${p.nombre}</td>
-                        <td style="color: var(--text-muted);">${[p.rfc, p.contacto].filter(Boolean).join(' | ') || '-'}</td>
-                        <td>
-                            ${hasPerm('gestionar_control_movimientos') ? `<button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('proveedores', ${p.id})" title="Modificar proveedor"><i class="fa-solid fa-pen-to-square"></i></button>` : '-'}
-                        </td>
-                    </tr>`).join('');
-                }
+            if (filtered.length === 0) {
+                catTbody.innerHTML = '<tr><td colspan="8" class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><br>No se encontraron claves que coincidan con la búsqueda.<br><button type="button" class="btn btn-secondary" onclick="clearControlCatalogoFilter()" style="margin-top: 0.5rem; padding: 0.35rem 0.75rem; font-size: 0.8rem;"><i class="fa-solid fa-xmark"></i> Limpiar Filtro</button></td></tr>';
+                return;
             }
+
+            catTbody.innerHTML = filtered.map(c => `<tr>
+                <td style="font-weight: 700; font-family: monospace; color: var(--primary);">${c.clave}</td>
+                <td style="max-width: 280px; overflow: hidden; text-overflow: ellipsis;" title="${_escAttr(c.descripcion || '')}">${c.descripcion || '-'}</td>
+                <td>${c.udm_default || 'PZA'}</td>
+                <td>${c.proveedor_default || '-'}</td>
+                <td>${c.procedimiento || '-'}</td>
+                <td>${c.contrato || '-'}</td>
+                <td>${c.registro_sanitario || '-'}</td>
+                <td>
+                    ${hasPerm('gestionar_control_movimientos') ? `
+                    <div class="action-btn-group">
+                        <button type="button" class="btn-action btn-edit" onclick="editControlCatalogo(${c.id})" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button type="button" class="btn-action btn-delete" onclick="deleteControlCatalogo(${c.id})" title="Eliminar"><i class="fa-solid fa-trash"></i></button>
+                    </div>` : '-'}
+                </td>
+            </tr>`).join('');
+        }
+
+        function applyControlProveedoresFilter() {
+            const provTbody = document.getElementById('ctrlProveedoresTableBody');
+            if (!provTbody) return;
+
+            const allProv = ctrlProveedoresList || [];
+            if (allProv.length === 0) {
+                provTbody.innerHTML = '<tr><td colspan="3" class="empty-state">No hay proveedores registrados.</td></tr>';
+                return;
+            }
+
+            const rawQuery = (document.getElementById('ctrlProvSearchInput')?.value || '').trim().toLowerCase();
+            let filtered = allProv;
+            if (rawQuery) {
+                const tokens = rawQuery.split(/\s+/).filter(Boolean);
+                filtered = allProv.filter(p => {
+                    const nom = String(p.nombre || '').toLowerCase();
+                    const rfc = String(p.rfc || '').toLowerCase();
+                    const con = String(p.contacto || '').toLowerCase();
+                    const hay = `${nom} ${rfc} ${con}`;
+                    return tokens.every(t => hay.includes(t));
+                });
+            }
+
+            if (filtered.length === 0) {
+                provTbody.innerHTML = '<tr><td colspan="3" class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><br>No se encontraron proveedores coincidentes.</td></tr>';
+                return;
+            }
+
+            provTbody.innerHTML = filtered.map(p => `<tr>
+                <td style="font-weight: 600;">${p.nombre}</td>
+                <td style="color: var(--text-muted);">${[p.rfc, p.contacto].filter(Boolean).join(' | ') || '-'}</td>
+                <td>
+                    ${hasPerm('gestionar_control_movimientos') ? `<button type="button" class="btn-action btn-edit" onclick="openCtrlModificarRecord('proveedores', ${p.id})" title="Modificar proveedor"><i class="fa-solid fa-pen-to-square"></i></button>` : '-'}
+                </td>
+            </tr>`).join('');
+        }
 
             // Unidades
             const undTbody = document.getElementById('ctrlUnidadesTableBody');

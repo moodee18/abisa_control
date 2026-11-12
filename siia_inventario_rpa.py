@@ -350,10 +350,13 @@ class SiiaInventarioRPA:
 
                 # Cargar localidades y almacenes
                 iframe.select_option('#localidad', localidad_id)
-                iframe.wait_for_function(
-                    "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 5; }",
-                    timeout=15000
-                )
+                try:
+                    iframe.wait_for_function(
+                        "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 1; }",
+                        timeout=12000
+                    )
+                except Exception:
+                    page.wait_for_timeout(3000)
                 page.wait_for_timeout(1000)
 
                 # Mapeo de inventarios abiertos
@@ -407,10 +410,13 @@ class SiiaInventarioRPA:
                         # Asegurar localidad activa
                         if iframe.locator('#localidad').input_value() != localidad_id or iframe.locator('#almacen option').count() <= 1:
                             iframe.select_option('#localidad', localidad_id)
-                            iframe.wait_for_function(
-                                "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 5; }",
-                                timeout=15000
-                            )
+                            try:
+                                iframe.wait_for_function(
+                                    "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 1; }",
+                                    timeout=12000
+                                )
+                            except Exception:
+                                page.wait_for_timeout(3000)
                             page.wait_for_timeout(1000)
 
                         iframe.select_option('#almacen', inv_id)

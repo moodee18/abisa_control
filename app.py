@@ -2433,6 +2433,7 @@ from siia_inventario_rpa import siia_rpa_manager
 async def siia_rpa_alta(
     file: UploadFile = File(...),
     localidad_id: str = Form("1836"),
+    tipo_captura: str = Form("1"),
     descargar_pdfs: bool = Form(True),
     current_user: Dict[str, Any] = Depends(require_any_permission("automatizacion_siia"))
 ):
@@ -2449,7 +2450,7 @@ async def siia_rpa_alta(
 
     threading.Thread(
         target=siia_rpa_manager.ejecutar_alta_masiva,
-        args=(str(file_path), localidad_id, descargar_pdfs),
+        args=(str(file_path), localidad_id, tipo_captura, descargar_pdfs),
         daemon=True
     ).start()
 

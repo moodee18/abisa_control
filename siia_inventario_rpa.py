@@ -70,6 +70,7 @@ class SiiaInventarioRPA:
         self,
         excel_path: str,
         localidad_id: str = "1836",
+        tipo_captura: str = "1",
         descargar_pdfs: bool = True
     ):
         with self._lock:
@@ -195,7 +196,21 @@ class SiiaInventarioRPA:
                     try:
                         iframe.select_option('#almacen', alm_id)
                         page.wait_for_timeout(1000)
-                        iframe.click('input[value="Generar"]')
+
+                        # Selección de Tipo de Captura (PC / HandHeld) si el campo está presente y visible
+                        tipo_cap = iframe.locator('#tipo_captura')
+                        if tipo_cap.count() > 0 and tipo_cap.is_visible():
+                            try:
+                                tipo_cap.select_option(str(tipo_captura))
+                                page.wait_for_timeout(500)
+                                self.log(f"   [Tipo Captura] Seleccionada opción '{tipo_captura}' (PC)")
+                            except Exception as e_tc:
+                                self.log(f"   [Aviso Tipo Captura] {e_tc}")
+
+                        if iframe.locator('#btn_generar').count() > 0:
+                            iframe.click('#btn_generar')
+                        else:
+                            iframe.click('input[value="Generar"]')
                         page.wait_for_timeout(3500)
 
                         last_dialog = dialogs[-1] if dialogs else ""

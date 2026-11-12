@@ -3983,9 +3983,26 @@
                                     <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
                                         Localidad en SIIA:
                                     </label>
-                                    <select id="siiaAltaLocalidad" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;">
+                                    <select id="siiaAltaLocalidad" onchange="toggleTipoCapturaAlta(this.value)" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem; font-weight: 600;">
                                         <option value="1836" selected>CS ALMACEN 2022 (ID: 1836)</option>
+                                        <option value="1878">ALMACEN CADUCOS MATERIAL DE CURACION (ID: 1878)</option>
+                                        <option value="1835">CS FARMACIA MAT 2022 (ID: 1835)</option>
+                                        <option value="1834">CS FARMACIA MED 2022 (ID: 1834)</option>
+                                        <option value="1846">CS GRATUIDAD 2023 (ID: 1846)</option>
                                     </select>
+                                </div>
+
+                                <div id="wrapperTipoCapturaAlta" style="margin-bottom: 1rem;">
+                                    <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
+                                        Tipo de Captura en SIIA:
+                                    </label>
+                                    <select id="siiaAltaTipoCaptura" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem; font-weight: 600;">
+                                        <option value="1" selected>PC (Opción 1 - Recomendado)</option>
+                                        <option value="2">HandHeld (Opción 2)</option>
+                                    </select>
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">
+                                        <i class="fa-solid fa-circle-check" style="color: #10b981;"></i> Requerido con <strong>PC</strong> para ALMACEN CADUCOS MATERIAL DE CURACION.
+                                    </span>
                                 </div>
 
                                 <div style="margin-bottom: 1rem;">
@@ -4046,8 +4063,12 @@
                                     <label style="display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.4rem;">
                                         Localidad en SIIA:
                                     </label>
-                                    <select id="siiaSegLocalidad" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem;">
+                                    <select id="siiaSegLocalidad" style="width: 100%; padding: 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); font-size: 0.9rem; font-weight: 600;">
                                         <option value="1836" selected>CS ALMACEN 2022 (ID: 1836)</option>
+                                        <option value="1878">ALMACEN CADUCOS MATERIAL DE CURACION (ID: 1878)</option>
+                                        <option value="1835">CS FARMACIA MAT 2022 (ID: 1835)</option>
+                                        <option value="1834">CS FARMACIA MED 2022 (ID: 1834)</option>
+                                        <option value="1846">CS GRATUIDAD 2023 (ID: 1846)</option>
                                     </select>
                                 </div>
 
@@ -11931,6 +11952,22 @@
         }
     }
 
+    function toggleTipoCapturaAlta(val) {
+        const wrap = document.getElementById('wrapperTipoCapturaAlta');
+        if (wrap) {
+            if (val === '1878') {
+                wrap.style.border = '1px solid rgba(234, 88, 12, 0.4)';
+                wrap.style.borderRadius = '8px';
+                wrap.style.padding = '0.5rem';
+                wrap.style.background = 'rgba(234, 88, 12, 0.05)';
+            } else {
+                wrap.style.border = 'none';
+                wrap.style.padding = '0';
+                wrap.style.background = 'transparent';
+            }
+        }
+    }
+
     async function startSiiaAlta() {
         const fileInput = document.getElementById('siiaAltaFile');
         if (!fileInput.files || fileInput.files.length === 0) {
@@ -11939,11 +11976,13 @@
         }
 
         const localidad = document.getElementById('siiaAltaLocalidad').value;
+        const tipoCaptura = document.getElementById('siiaAltaTipoCaptura') ? document.getElementById('siiaAltaTipoCaptura').value : '1';
         const descargarPdfs = document.getElementById('siiaAltaDescargarPdfs').checked;
 
         const formData = new FormData();
         formData.append('file', fileInput.files[0]);
         formData.append('localidad_id', localidad);
+        formData.append('tipo_captura', tipoCaptura);
         formData.append('descargar_pdfs', descargarPdfs);
 
         try {

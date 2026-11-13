@@ -201,12 +201,31 @@ class SiiaInventarioRPA:
                             })
                         continue
 
+                    # Asegurar que la localidad siga activa y los almacenes cargados (el formulario de SIIA se resetea tras pulsar 'Generar')
+                    try:
+                        curr_loc = iframe.locator('#localidad').input_value()
+                        opts_count = iframe.locator('#almacen option').count()
+                    except Exception:
+                        curr_loc = None
+                        opts_count = 0
+
+                    if str(curr_loc) != str(localidad_id) or opts_count <= 1:
+                        try:
+                            iframe.select_option('#localidad', str(localidad_id))
+                            iframe.wait_for_function(
+                                "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 1; }",
+                                timeout=12000
+                            )
+                        except Exception:
+                            page.wait_for_timeout(3000)
+                        page.wait_for_timeout(800)
+
                     self.log(f"[{idx}/{len(almacenes)}] Generando alta para: {alm_nombre} (ID: {alm_id})...")
                     dialogs.clear()
 
                     try:
-                        iframe.select_option('#almacen', alm_id)
-                        page.wait_for_timeout(1000)
+                        iframe.select_option('#almacen', alm_id, timeout=10000)
+                        page.wait_for_timeout(800)
 
                         # Selección de Tipo de Captura (PC / HandHeld) si el campo está presente y visible
                         tipo_cap = iframe.locator('#tipo_captura')
@@ -226,7 +245,7 @@ class SiiaInventarioRPA:
 
                         last_dialog = dialogs[-1] if dialogs else ""
                         estado = "GENERADO"
-                        if "Ajuste Pendiente" in last_dialog:
+                        if "Ajuste Pendiente" in last_dialog or "pendiente" in last_dialog.lower():
                             estado = "AJUSTE_PENDIENTE"
                         elif "previamente" in last_dialog:
                             estado = "YA_EXISTE"

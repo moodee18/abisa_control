@@ -140,6 +140,7 @@ class EntradaMovRequest(BaseModel):
     mes: Optional[str] = "OCTUBRE"
     ano: Optional[int] = 2026
     observaciones: Optional[str] = ""
+    force_new: Optional[bool] = False
 
 class SalidaPdfUpdateRequest(BaseModel):
     archivo_pdf: Optional[str] = None
@@ -174,6 +175,7 @@ class ApoyoInstitucionalRequest(BaseModel):
     mes: Optional[str] = "OCTUBRE"
     ano: Optional[int] = 2026
     observaciones: Optional[str] = ""
+    force_new: Optional[bool] = False
 
 
 # ==========================================

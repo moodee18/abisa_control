@@ -89,6 +89,12 @@ class SiiaInventarioRPA:
             })
             self.cancel_requested = False
 
+        import asyncio
+        try:
+            asyncio.set_event_loop(None)
+        except Exception:
+            pass
+
         try:
             # 1. Leer almacenes del Excel
             almacenes = self._extract_almacenes_from_excel(excel_path)
@@ -135,7 +141,14 @@ class SiiaInventarioRPA:
 
                 # Seleccionar localidad
                 iframe.select_option('#localidad', localidad_id)
-                page.wait_for_timeout(2500)
+                try:
+                    iframe.wait_for_function(
+                        "() => { const a = document.getElementById('almacen'); return a && !a.disabled && a.options.length > 1; }",
+                        timeout=12000
+                    )
+                except Exception:
+                    page.wait_for_timeout(3000)
+                page.wait_for_timeout(1000)
 
                 # Obtener catálogo de almacenes del select
                 opts = iframe.locator('#almacen option').all()
@@ -148,10 +161,8 @@ class SiiaInventarioRPA:
 
                 self.log(f"Catálogo de almacenes en SIIA cargado ({len(siia_map)} disponibles).")
 
-                # Sesión HTTP para descargas directas de PDFs
-                from downloader import SiiaDownloader
-                dl = SiiaDownloader()
-                cookies = dl.get_authenticated_session_cookies()
+                # Sesión HTTP para descargas directas de PDFs (usando las cookies del navegador ya autenticado)
+                cookies = {c['name']: c['value'] for c in page.context.cookies()}
                 cookie_hdr = '; '.join([f'{k}={v}' for k, v in cookies.items()])
                 ctx_ssl = ssl.create_default_context()
                 ctx_ssl.check_hostname = False
@@ -319,6 +330,12 @@ class SiiaInventarioRPA:
                 "error": None
             })
             self.cancel_requested = False
+
+        import asyncio
+        try:
+            asyncio.set_event_loop(None)
+        except Exception:
+            pass
 
         try:
             # 1. Cargar datos del Excel

@@ -4661,8 +4661,13 @@
                             <input type="date" class="form-control" id="ctrl_e_fabricacion">
                         </div>
                         <div class="form-group">
-                            <label>Almacén</label>
-                            <input type="text" class="form-control" id="ctrl_e_almacen" value="CS ALMACEN 2022">
+                            <label>Almacén / Institución</label>
+                            <input type="text" class="form-control" id="ctrl_e_almacen" value="CS ALMACEN 2022" list="listAlmacenesEntrada" placeholder="CS ALMACEN 2022">
+                            <datalist id="listAlmacenesEntrada">
+                                <option value="CS ALMACEN 2022">
+                                <option value="ALMACEN CADUCOS MATERIAL DE CURACION">
+                                <option value="SECRETARIA DE SALUD GOBIERNO DE CHIAPAS 2024-2030">
+                            </datalist>
                         </div>
                         
                         <!-- Cantidades y Cálculos -->
@@ -4681,6 +4686,17 @@
                         <div class="form-group" style="background: rgba(16,185,129,0.12); padding: 8px; border-radius: 6px;">
                             <label style="font-weight: 800; color: #047857;">Total Entrada Mensual</label>
                             <input type="number" step="any" class="form-control" id="ctrl_e_total_mensual" readonly style="font-weight: 800; color: #047857; background: #ffffff;">
+                        </div>
+
+                        <!-- Opción para forzar nueva partida independiente -->
+                        <div class="form-group col-span-2" style="background: rgba(16, 185, 129, 0.06); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
+                            <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-weight: 700; color: var(--text-color); margin: 0;">
+                                <input type="checkbox" id="ctrl_e_force_new" style="width: 18px; height: 18px; accent-color: #10b981;">
+                                <span><i class="fa-solid fa-plus-circle" style="color: #10b981;"></i> Registrar como otra entrada de ajuste independiente (no unificar con partidas existentes)</span>
+                            </label>
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-left: 28px; margin-top: 2px;">
+                                Activa esta casilla cuando quieras agregar un ajuste para otro almacén o proveedor sin fusionarlo con el inventario anterior.
+                            </span>
                         </div>
 
                         <!-- Apoyo Institucional y Fecha de Apoyo -->
@@ -8979,7 +8995,9 @@
             if (c) {
                 document.getElementById('ctrl_e_descripcion').value = c.descripcion || '';
                 if (c.udm_default) document.getElementById('ctrl_e_udm').value = c.udm_default;
-                if (c.proveedor_default) document.getElementById('ctrl_e_proveedor').value = c.proveedor_default;
+                if (c.proveedor_default && !document.getElementById('ctrl_e_proveedor').value) {
+                    document.getElementById('ctrl_e_proveedor').value = c.proveedor_default;
+                }
             } else if (clave.length >= 3) {
                 try {
                     const res = await fetch(`/api/control-movimientos/catalogo?search=${encodeURIComponent(clave)}`);
@@ -8992,7 +9010,9 @@
                             descEl.value = match.descripcion;
                         }
                         if (match.udm_default) document.getElementById('ctrl_e_udm').value = match.udm_default;
-                        if (match.proveedor_default) document.getElementById('ctrl_e_proveedor').value = match.proveedor_default;
+                        if (match.proveedor_default && !document.getElementById('ctrl_e_proveedor').value) {
+                            document.getElementById('ctrl_e_proveedor').value = match.proveedor_default;
+                        }
                     }
                 } catch (e) {}
             }
@@ -9052,6 +9072,7 @@
             document.getElementById('ctrlEntradaForm').reset();
             document.getElementById('ctrl_e_fecha_entrada').value = '';
             document.getElementById('ctrl_e_total_mensual').value = '0';
+            if (document.getElementById('ctrl_e_force_new')) document.getElementById('ctrl_e_force_new').checked = false;
             if (document.getElementById('ctrl_e_apoyo')) document.getElementById('ctrl_e_apoyo').value = '0';
             if (document.getElementById('ctrl_e_fecha_apoyo')) document.getElementById('ctrl_e_fecha_apoyo').value = '';
             if (document.getElementById('ctrl_e_orden_suministro')) document.getElementById('ctrl_e_orden_suministro').value = '';
@@ -9132,6 +9153,7 @@
                 no_procedimiento: proc,
                 contrato: cont,
                 no_contrato: cont,
+                force_new: document.getElementById('ctrl_e_force_new') ? document.getElementById('ctrl_e_force_new').checked : false,
                 mes: document.getElementById('ctrlMonthSelect')?.value || 'OCTUBRE',
                 ano: parseInt(document.getElementById('ctrlYearSelect')?.value || '2026', 10)
             };

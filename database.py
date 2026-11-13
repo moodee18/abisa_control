@@ -2228,8 +2228,12 @@ class DatabaseManager:
             target_lote = lote.upper()
             target_cad = normalize_caducidad(target_cad_raw)
             target_orden = _norm_os(raw_orden)
+            target_prov = str(data.get("proveedor") or "").strip().upper()
+            target_alm = str(data.get("almacen") or "").strip().upper()
 
-            # Buscar si ya existe coincidencia exacta por los 4 criterios (Clave, Lote, Caducidad, Orden)
+            force_new = bool(data.get("force_new") or data.get("forzar_nueva_partida"))
+
+            # Buscar si ya existe coincidencia exacta (Clave, Lote, Caducidad, Orden, Proveedor y Almacén)
             candidates = session.query(EntradaMov).filter(
                 EntradaMov.mes == mes,
                 EntradaMov.ano == ano,
@@ -2237,26 +2241,35 @@ class DatabaseManager:
             ).order_by(EntradaMov.row_index.asc(), EntradaMov.id.asc()).all()
 
             matched_entry = None
-            for cand in candidates:
-                cand_clave = str(cand.clave or "").strip().upper()
-                if cand_clave != target_clave:
-                    continue
+            if not force_new:
+                for cand in candidates:
+                    cand_clave = str(cand.clave or "").strip().upper()
+                    if cand_clave != target_clave:
+                        continue
 
-                cand_lote = str(cand.lote or "").strip().upper()
-                if cand_lote != target_lote:
-                    continue
+                    cand_lote = str(cand.lote or "").strip().upper()
+                    if cand_lote != target_lote:
+                        continue
 
-                cand_cad = normalize_caducidad(cand.fecha_caducidad)
-                if cand_cad != target_cad:
-                    continue
+                    cand_cad = normalize_caducidad(cand.fecha_caducidad)
+                    if cand_cad != target_cad:
+                        continue
 
-                cand_orden = _norm_os(cand.folio_documento)
-                if cand_orden != target_orden:
-                    continue
+                    cand_orden = _norm_os(cand.folio_documento)
+                    if cand_orden != target_orden:
+                        continue
 
-                # Coinciden exactamente los 4 criterios
-                matched_entry = cand
-                break
+                    cand_prov = str(cand.proveedor or "").strip().upper()
+                    if target_prov and cand_prov and cand_prov != target_prov:
+                        continue
+
+                    cand_alm = str(cand.almacen or "").strip().upper()
+                    if target_alm and cand_alm and cand_alm != target_alm:
+                        continue
+
+                    # Coinciden exactamente todos los criterios
+                    matched_entry = cand
+                    break
 
             apoyo_val = float(data.get("apoyo_institucional", 0.0) or 0.0)
             fecha_apoyo_val = str(data.get("fecha_apoyo", "") or "").strip()

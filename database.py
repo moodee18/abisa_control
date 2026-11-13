@@ -2282,11 +2282,11 @@ class DatabaseManager:
                 matched_entry.entrada_ajuste = float(matched_entry.entrada_ajuste or 0.0) + ajuste
                 matched_entry.cantidad_recibida = float(matched_entry.cantidad_recibida or 0.0) + recibida
                 matched_entry.apoyo_institucional = float(matched_entry.apoyo_institucional or 0.0) + apoyo_val
-                if fecha_apoyo_val and not matched_entry.fecha_apoyo:
+                if fecha_apoyo_val:
                     matched_entry.fecha_apoyo = fecha_apoyo_val
-                if fecha_ajuste_val and not matched_entry.fecha_ajuste:
+                if fecha_ajuste_val:
                     matched_entry.fecha_ajuste = fecha_ajuste_val
-                if fecha_entrada_val and not matched_entry.fecha_entrada:
+                if fecha_entrada_val:
                     matched_entry.fecha_entrada = fecha_entrada_val
 
                 new_obs = str(data.get("observaciones") or "").strip()

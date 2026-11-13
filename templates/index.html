@@ -4649,10 +4649,6 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Fecha de Entrada</label>
-                            <input type="date" class="form-control" id="ctrl_e_fecha_entrada">
-                        </div>
-                        <div class="form-group">
                             <label>Fecha de Caducidad *</label>
                             <input type="date" class="form-control" id="ctrl_e_caducidad" required>
                         </div>
@@ -4660,7 +4656,7 @@
                             <label>Fecha de Fabricación</label>
                             <input type="date" class="form-control" id="ctrl_e_fabricacion">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group col-span-2">
                             <label>Almacén / Institución</label>
                             <input type="text" class="form-control" id="ctrl_e_almacen" value="CS ALMACEN 2022" list="listAlmacenesEntrada" placeholder="CS ALMACEN 2022">
                             <datalist id="listAlmacenesEntrada">
@@ -4670,22 +4666,34 @@
                             </datalist>
                         </div>
                         
-                        <!-- Cantidades y Cálculos -->
+                        <!-- Cantidades, Fechas y Cálculos -->
                         <div class="form-group" style="background: rgba(37,99,235,0.04); padding: 8px; border-radius: 6px;">
                             <label style="font-weight: 700; color: var(--primary);">Inventario Inicial (Fijo)</label>
                             <input type="number" step="any" class="form-control" id="ctrl_e_inv_inicial" value="0" oninput="recalcControlEntradaTotals()">
                         </div>
-                        <div class="form-group" style="background: rgba(245,158,11,0.04); padding: 8px; border-radius: 6px;">
-                            <label style="font-weight: 700; color: var(--warning);">Entrada por Ajuste</label>
-                            <input type="number" step="any" class="form-control" id="ctrl_e_ajuste" value="0" oninput="recalcControlEntradaTotals()">
-                        </div>
-                        <div class="form-group" style="background: rgba(16,185,129,0.04); padding: 8px; border-radius: 6px;">
-                            <label style="font-weight: 700; color: var(--success);">Cantidad Recibida</label>
-                            <input type="number" step="any" class="form-control" id="ctrl_e_recibida" value="0" oninput="recalcControlEntradaTotals()">
-                        </div>
                         <div class="form-group" style="background: rgba(16,185,129,0.12); padding: 8px; border-radius: 6px;">
                             <label style="font-weight: 800; color: #047857;">Total Entrada Mensual</label>
                             <input type="number" step="any" class="form-control" id="ctrl_e_total_mensual" readonly style="font-weight: 800; color: #047857; background: #ffffff;">
+                        </div>
+
+                        <!-- Sección Entrada por Ajuste (Fecha y Cantidad) -->
+                        <div class="form-group" style="background: rgba(245,158,11,0.06); padding: 8px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.25);">
+                            <label style="font-weight: 700; color: #b45309;"><i class="fa-regular fa-calendar-check"></i> Fecha Entrada por Ajuste</label>
+                            <input type="date" class="form-control" id="ctrl_e_fecha_ajuste">
+                        </div>
+                        <div class="form-group" style="background: rgba(245,158,11,0.06); padding: 8px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.25);">
+                            <label style="font-weight: 700; color: #b45309;"><i class="fa-solid fa-calculator"></i> Entrada por Ajuste</label>
+                            <input type="number" step="any" class="form-control" id="ctrl_e_ajuste" value="0" oninput="recalcControlEntradaTotals(); onCtrlEntradaAjusteChange();">
+                        </div>
+
+                        <!-- Sección Entrada Recibida (Fecha y Cantidad) -->
+                        <div class="form-group" style="background: rgba(16,185,129,0.06); padding: 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.25);">
+                            <label style="font-weight: 700; color: #047857;"><i class="fa-regular fa-calendar-plus"></i> Fecha de Entrada</label>
+                            <input type="date" class="form-control" id="ctrl_e_fecha_entrada">
+                        </div>
+                        <div class="form-group" style="background: rgba(16,185,129,0.06); padding: 8px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.25);">
+                            <label style="font-weight: 700; color: #047857;"><i class="fa-solid fa-boxes-stacked"></i> Cantidad Recibida</label>
+                            <input type="number" step="any" class="form-control" id="ctrl_e_recibida" value="0" oninput="recalcControlEntradaTotals(); onCtrlEntradaRecibidaChange();">
                         </div>
 
                         <!-- Opción para forzar nueva partida independiente -->
@@ -8278,7 +8286,14 @@
             let html = '';
             items.forEach(e => {
                 const total = (e.inventario_inicial || 0) + (e.entrada_por_ajuste || 0) + (e.cantidad_recibida || 0);
-                const fechaDisplay = e.fecha_entrada || (e.fecha_ajuste ? `<span title="Fecha de Ajuste" style="color: #b45309; font-weight: 600;"><i class="fa-regular fa-calendar-check"></i> ${e.fecha_ajuste}</span>` : '-');
+                let fechaDisplay = '-';
+                if (e.fecha_entrada && e.fecha_ajuste) {
+                    fechaDisplay = `<div title="Fecha de Entrada"><i class="fa-regular fa-calendar-plus" style="color: #059669;"></i> ${e.fecha_entrada}</div><div title="Fecha Entrada por Ajuste" style="color: #b45309; font-size: 0.76rem; font-weight: 600;"><i class="fa-regular fa-calendar-check"></i> Aj: ${e.fecha_ajuste}</div>`;
+                } else if (e.fecha_entrada) {
+                    fechaDisplay = `<div title="Fecha de Entrada"><i class="fa-regular fa-calendar-plus" style="color: #059669;"></i> ${e.fecha_entrada}</div>`;
+                } else if (e.fecha_ajuste) {
+                    fechaDisplay = `<div title="Fecha Entrada por Ajuste" style="color: #b45309; font-weight: 600;"><i class="fa-regular fa-calendar-check"></i> ${e.fecha_ajuste}</div>`;
+                }
                 html += `<tr>
                     <td>${fechaDisplay}</td>
                     <td style="font-weight: 700; font-family: monospace; color: #1e40af;">${e.orden_suministro || e.folio_documento || '-'}</td>
@@ -9067,10 +9082,29 @@
         }
 
         // 10. Modales y CRUD de Entrada Manual
+        function onCtrlEntradaAjusteChange() {
+            const aju = parseFloat(document.getElementById('ctrl_e_ajuste')?.value || 0);
+            const fAju = document.getElementById('ctrl_e_fecha_ajuste');
+            if (aju > 0 && fAju && !fAju.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fAju.value = today;
+            }
+        }
+
+        function onCtrlEntradaRecibidaChange() {
+            const rec = parseFloat(document.getElementById('ctrl_e_recibida')?.value || 0);
+            const fEnt = document.getElementById('ctrl_e_fecha_entrada');
+            if (rec > 0 && fEnt && !fEnt.value) {
+                const today = new Date().toISOString().split('T')[0];
+                fEnt.value = today;
+            }
+        }
+
         async function openModalControlEntrada(id = null) {
             document.getElementById('ctrlEntradaId').value = '';
             document.getElementById('ctrlEntradaForm').reset();
             document.getElementById('ctrl_e_fecha_entrada').value = '';
+            if (document.getElementById('ctrl_e_fecha_ajuste')) document.getElementById('ctrl_e_fecha_ajuste').value = '';
             document.getElementById('ctrl_e_total_mensual').value = '0';
             if (document.getElementById('ctrl_e_force_new')) document.getElementById('ctrl_e_force_new').checked = false;
             if (document.getElementById('ctrl_e_apoyo')) document.getElementById('ctrl_e_apoyo').value = '0';
@@ -9098,6 +9132,9 @@
             document.getElementById('ctrl_e_proveedor').value = item.proveedor || '';
             document.getElementById('ctrl_e_udm').value = item.unidad_medida || 'PZA';
             document.getElementById('ctrl_e_fecha_entrada').value = item.fecha_entrada || '';
+            if (document.getElementById('ctrl_e_fecha_ajuste')) {
+                document.getElementById('ctrl_e_fecha_ajuste').value = item.fecha_ajuste || '';
+            }
             document.getElementById('ctrl_e_caducidad').value = item.fecha_caducidad || '';
             document.getElementById('ctrl_e_fabricacion').value = item.fecha_fabricacion || '';
             document.getElementById('ctrl_e_almacen').value = item.almacen || 'CS ALMACEN 2022';
@@ -9137,6 +9174,7 @@
                 descripcion: document.getElementById('ctrl_e_descripcion').value.trim(),
                 proveedor: document.getElementById('ctrl_e_proveedor').value,
                 unidad_medida: document.getElementById('ctrl_e_udm').value,
+                fecha_ajuste: document.getElementById('ctrl_e_fecha_ajuste') ? document.getElementById('ctrl_e_fecha_ajuste').value : '',
                 fecha_entrada: document.getElementById('ctrl_e_fecha_entrada').value,
                 fecha_caducidad: document.getElementById('ctrl_e_caducidad').value,
                 fecha_fabricacion: document.getElementById('ctrl_e_fabricacion').value,
